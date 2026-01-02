@@ -25,6 +25,10 @@ file(GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS
 add_executable(${PROJECT_NAME}
         ${PROJECT_SOURCES}
         ${PROJECT_HEADERS}
+        src/node/node.h
+        src/node/node.cc
+        src/types/types.h
+        src/net/tcp_server.h
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
