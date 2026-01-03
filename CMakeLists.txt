@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
         src/node/node.cc
         src/types/types.h
         src/net/tcp_server.h
+        src/protocol/message.cc
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
