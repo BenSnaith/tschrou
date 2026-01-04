@@ -114,6 +114,37 @@ struct PongMessage : Message {
   static PongMessage Deserialise(std::span<std::byte> data);
 };
 
+struct GetRequest : Message {
+
+};
+
+struct GetResponse : Message {
+
+};
+
+struct PutRequest : Message {
+
+};
+
+struct PutResponse : Message {
+
+};
+
+struct TransferKeysRequest : Message {
+
+};
+
+struct TransferKeysResponse : Message {
+
+};
+
+struct ErrorResponse : Message {
+
+};
+
+MessageType GetMessageType(std::span<std::byte> data);
+std::vector<std::byte> ReadMessagePayload(std::span<std::byte> data);
+
 } // namespace tsc::msg
 
 #endif // MESSAGE_H
