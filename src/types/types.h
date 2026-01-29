@@ -1,3 +1,4 @@
+#include <expected>
 #ifndef TYPES_H
 #include TYPES_H
 
@@ -20,6 +21,9 @@ using i128 = __int128_t;
 
 using NodeID = u32;
 using KeyID = u32;
+
+template<typename T>
+using Result = std::expected<T, std::string>;
 
 // number of bits in the identifier space.
 // 32-bits will give us 4 billion possible ID's

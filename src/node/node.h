@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "types/types.h"
+#include "net/tcp_server.h"
 
 using namespace tsc::type;
 

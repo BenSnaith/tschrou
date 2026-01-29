@@ -9,7 +9,11 @@
 #include <cstring>
 #include <iostream>
 
+#include "protocol/message.h"
+
 namespace tsc::tcp {
+using namespace tsc::msg;
+
 TcpServer::TcpServer(u16 port, Node* node) : port_(port), node_(node) {}
 
 TcpServer::~TcpServer() { Stop(); }
@@ -117,12 +121,51 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
 
   try {
     switch (type) {
-      case MessageType::FIND_SUCCESSOR_REQUEST: {
+      case MessageType::kFindSuccessorRequest: {
+        auto req = FindSuccessorRequest::Deserialise(message);
+        auto successor = node_->FindSuccessor(req.id_);
 
+        FindSuccessorResponse response;
+        if(successor) {
+          response.found_ = true;
+          response.successor_ = *successor;
+        }
+        else {
+          response.found_ = false;
+        }
+        return response.Serialise();
       }
+      case MessageType::kGetPredecessorRequest: {
+        auto predecessor = node_->GetPredecessor();
 
-      case
+        GetPredecessorResponse response;
+        if(predecessor) {
+          response.has_predecessor_ = true;
+          response.predecessor_ = *predecessor;
+        }
+        else {
+          response.has_predecessor_ = false;
+        }
+        return response.Serialise();
+      }
+      case MessageType::kNotify: {
+        auto msg = NotifyMessage::Deserialise(message);
+        node_->Notify(msg.node_);
+
+        NotifyAck ack;
+        ack.accepted_ = true;
+        return ack.Serialise();
+      }
+      case MessageType::kPing: {
+        return PongMessage().Serialise();
+      }
+      case MessageType::kGetRequest: {
+        auto req = GetRequest::Deserialise(message);
+      }
     }
+  }
+  catch (const std::exception& e) {
+   // get rid of this
   }
 
   return {};

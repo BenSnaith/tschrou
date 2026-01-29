@@ -33,7 +33,7 @@ enum class MessageType : u8 {
 };
 
 struct Message {
-  virtual std::vector<std::byte> Serialise() const = 0;
+  [[nodiscard]] virtual std::vector<std::byte> Serialise() const = 0;
 
   virtual ~Message() = default;
 
@@ -46,7 +46,7 @@ struct FindSuccessorRequest : Message {
     type_ = MessageType::kFindSuccessorRequest;
   }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static FindSuccessorRequest Deserialise(std::span<std::byte> data);
 
   NodeID id_;
@@ -55,7 +55,7 @@ struct FindSuccessorRequest : Message {
 struct FindSuccessorResponse : Message {
   FindSuccessorResponse() { type_ = MessageType::kFindSuccessorResponse; }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static FindSuccessorResponse Deserialise(std::span<std::byte> data);
 
   NodeInfo successor_;
@@ -65,14 +65,14 @@ struct FindSuccessorResponse : Message {
 struct GetPredecessorRequest : Message {
   GetPredecessorRequest() { type_ = MessageType::kGetPredecessorRequest; }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static GetPredecessorRequest Deserialise(std::span<std::byte> data);
 };
 
 struct GetPredecessorResponse : Message {
   GetPredecessorResponse() { type_ = MessageType::kGetPredecessorResponse; }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static GetPredecessorResponse Deserialise(std::span<std::byte> data);
 
   NodeInfo predecessor_;
@@ -85,7 +85,7 @@ struct NotifyMessage : Message {
     type_ = MessageType::kNotify;
   }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static NotifyMessage Deserialise(std::span<std::byte> data);
 
   NodeInfo node_;
@@ -94,7 +94,7 @@ struct NotifyMessage : Message {
 struct NotifyAck : Message {
   NotifyAck() { type_ = MessageType::kNotifyAck; }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static NotifyAck Deserialise(std::span<std::byte> data);
 
   bool accepted_;
@@ -103,46 +103,92 @@ struct NotifyAck : Message {
 struct PingMessage : Message {
   PingMessage() { type_ = MessageType::kPing; }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static PingMessage Deserialise(std::span<std::byte> data);
 };
 
 struct PongMessage : Message {
   PongMessage() { type_ = MessageType::kPong; }
 
-  std::vector<std::byte> Serialise() const override;
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static PongMessage Deserialise(std::span<std::byte> data);
 };
 
 struct GetRequest : Message {
+  GetRequest() { type_ = MessageType::kGetRequest; }
+  explicit GetRequest(const std::string& key) : key_(key) {}
 
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
+  static GetRequest Deserialise(std::span<std::byte> data);
+
+  std::string key_;
 };
 
 struct GetResponse : Message {
+  GetResponse() { type_ = MessageType::kGetResponse; }
 
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
+  static GetResponse Deserialise(std::span<std::byte> data);
+
+  std::string value_;
+  bool found_;
 };
 
 struct PutRequest : Message {
+  PutRequest() { type_ = MessageType::kPutRequest; }
+  PutRequest(const std::string& key, const std::string& value)
+    : key_(key)
+    , value_(value)
+  { type_ = MessageType::kPutRequest; }
 
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
+  static PutRequest Deserialise(std::span<std::byte> data);
+
+  std::string key_;
+  std::string value_;
 };
 
 struct PutResponse : Message {
+  PutResponse() { type_ = MessageType::kPutResponse; }
 
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
+  static PutResponse Deserialise(std::span<std::byte> data);
+
+  bool success_;
 };
 
 struct TransferKeysRequest : Message {
+  TransferKeysRequest() { type_ = MessageType::kTransferKeysRequest; }
 
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
+  static TransferKeysRequest Deserialise(std::span<std::byte> data);
+
+  NodeID start_;
+  NodeID end_;
 };
 
 struct TransferKeysResponse : Message {
+  TransferKeysResponse() { type_ = MessageType::kTransferKeysResponse; }
 
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
+  static TransferKeysResponse Deserialise(std::span<std::byte> data);
+
+  std::vector<std::pair<std::string, std::string>> keys_;
 };
 
 struct ErrorResponse : Message {
+  ErrorResponse() { type_ = MessageType::kErrorResponse; }
+  explicit ErrorResponse(const std::string& msg) : error_message_(msg) {
+    type_ = MessageType::kErrorResponse;
+  }
 
+  [[nodiscard]] std::vector<std::byte> Serialise() const override;
+  static ErrorResponse Deserialise(std::span<std::byte> data);
+
+  std::string error_message_;
 };
 
-MessageType GetMessageType(std::span<std::byte> data);
+Result<MessageType> GetMessageType(std::span<std::byte> data);
 std::vector<std::byte> ReadMessagePayload(std::span<std::byte> data);
 
 } // namespace tsc::msg
