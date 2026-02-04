@@ -30,6 +30,13 @@ add_executable(${PROJECT_NAME}
         src/types/types.h
         src/net/tcp_server.h
         src/protocol/message.cc
+        src/util/hash.cc
+        src/util/hash.h
+        src/node/fingertable.h
+        src/node/fingertable.cc
+        src/node/fingertable.h
+        src/node/storage.h
+        src/node/storage.cc
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)

@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "types/types.h"
+#include "node/node.h"
 
-// this is gonna cause issues rewriting, refactor.
-using namespace tsc::type;
 
 namespace tsc::tcp {
-class Node;
+using namespace tsc::type;
+using namespace tsc::node;
 
 class TcpServer {
 public:

@@ -8,10 +8,14 @@
 
 #include "types/types.h"
 #include "net/tcp_server.h"
+#include "node/fingertable.h"
+#include "node/storage.h"
+#include "util/hash.h"
 
-using namespace tsc::type;
 
 namespace tsc::node {
+using namespace tsc::type;
+using namespace tsc::tcp;
 class Node {
  public:
   struct Config {
@@ -50,11 +54,11 @@ class Node {
 
   // classic hash table operations
 
-  bool put(const std::string& key, const std::string& value);
+  bool Put(const std::string& key, const std::string& value);
 
   [[nodiscard]] std::optional<std::string> Get(const std::string& key);
 
-  bool remove(const std::string& key);
+  bool Remove(const std::string& key);
 
   // local operations (YOU ARE THE NODE)
 
@@ -74,6 +78,9 @@ class Node {
     return {.id_ = id_, .address_ = address_};
   }
 
+  void PrintState() const;
+  void PrintFingerTable() const;
+
  private:
   // heartbeat
 
@@ -92,8 +99,6 @@ class Node {
   std::optional<NodeInfo> ClosestPredecingNode(NodeID id);
 
   bool IsAlive(const NodeAddress& address);
-
-  void TransferKeysTo(const NodeInfo& target);
 
   // state
 

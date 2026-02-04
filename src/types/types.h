@@ -1,9 +1,9 @@
-#include <expected>
 #ifndef TYPES_H
-#include TYPES_H
+#define TYPES_H
 
 #include <cstdint>
 #include <string>
+#include <expected>
 
 namespace tsc::type {
 // rust like types
@@ -24,6 +24,8 @@ using KeyID = u32;
 
 template<typename T>
 using Result = std::expected<T, std::string>;
+
+using KeySet = std::vector<std::pair<std::string, std::string>>;
 
 // number of bits in the identifier space.
 // 32-bits will give us 4 billion possible ID's
@@ -66,6 +68,29 @@ struct NodeInfo {
   NodeID id_;
   NodeAddress address_;
 };
+
+inline bool InRangeExclusive(NodeID id, NodeID start, NodeID end) {
+  if (start == end) {
+    return id != start;
+  }
+  if (start < end) {
+    return id > start && id < end;
+  } else {
+    return id > start || id < end;
+  }
+}
+
+inline bool InRangeExclusiveInclusive(NodeID id, NodeID start, NodeID end) {
+    if (start < end) {
+        // Normal case: no wraparound
+        return id > start && id <= end;
+    }
+    if (start > end) {
+        // Wraparound case
+        return id > start || id <= end;
+    }
+    return true;
+}
 } // namespace tsc::type
 
 #endif TYPES_H

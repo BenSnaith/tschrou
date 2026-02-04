@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 
 #include <cstring>
+#include <format>
 #include <iostream>
 
 #include "protocol/message.h"
@@ -161,11 +162,41 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
       }
       case MessageType::kGetRequest: {
         auto req = GetRequest::Deserialise(message);
+        auto value = node_->LocalGet(req.key_);
+
+        GetResponse response;
+        if(value) {
+          response.found_ = true;
+          response.value_ = *value;
+        }
+        else {
+          response.found_ = false;
+        }
+        return response.Serialise();
+      }
+      case MessageType::kPutRequest: {
+        auto req = PutRequest::Deserialise(message);
+        node_->LocalPut(req.key_, req.value_);
+
+        PutResponse response;
+        response.success_ = true;
+        return response.Serialise();
+      }
+      case MessageType::kTransferKeysRequest: {
+        auto req = TransferKeysRequest::Deserialise(message);
+        auto keys = node_->GetKeysInRange(req.start_, req.end_);
+
+        TransferKeysResponse response;
+        response.keys_ = keys;
+        return response.Serialise();
+      }
+      default: {
+        return ErrorResponse("Unknown message type").Serialise();
       }
     }
   }
   catch (const std::exception& e) {
-   // get rid of this
+    return ErrorResponse{std::format("{}", e.what())}.Serialise();
   }
 
   return {};
