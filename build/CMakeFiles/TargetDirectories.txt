@@ -1,0 +1,3 @@
+/home/bfs/Repos/tschrou/build/CMakeFiles/tschrou.dir
+/home/bfs/Repos/tschrou/build/CMakeFiles/edit_cache.dir
+/home/bfs/Repos/tschrou/build/CMakeFiles/rebuild_cache.dir
