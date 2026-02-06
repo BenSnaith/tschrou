@@ -116,7 +116,9 @@ struct PongMessage : Message {
 
 struct GetRequest : Message {
   GetRequest() { type_ = MessageType::kGetRequest; }
-  explicit GetRequest(const std::string& key) : key_(key) {}
+  explicit GetRequest(const std::string& key) : key_(key) {
+    type_ = MessageType::kGetRequest;
+  }
 
   [[nodiscard]] std::vector<std::byte> Serialise() const override;
   static GetRequest Deserialise(std::span<std::byte> data);

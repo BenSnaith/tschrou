@@ -8,6 +8,7 @@
 
 #include "types/types.h"
 #include "net/tcp_server.h"
+#include "net/tcp_client.h"
 #include "node/fingertable.h"
 #include "node/storage.h"
 #include "util/hash.h"
@@ -22,11 +23,26 @@ class Node {
     std::string ip_{"127.0.0.1"};
     u16 port_{8000};
 
-    constexpr std::chrono::milliseconds stabilise_interval{1000};
-    constexpr std::chrono::milliseconds fix_fingers_interval{500};
-    constexpr std::chrono::milliseconds check_predecessor_interval{2000};
+    static constexpr std::chrono::milliseconds stabilise_interval{1000};
+    static constexpr std::chrono::milliseconds fix_fingers_interval{500};
+    static constexpr std::chrono::milliseconds check_predecessor_interval{2000};
 
-    constexpr int successor_list_size{3};
+    static constexpr int successor_list_size{3};
+
+    // security flags
+    bool enable_id_verification{false};
+    bool enable_subnet_diversity{false};
+    bool enable_rate_limiting{false};
+    bool enable_lookup_validation{false};
+    bool enable_peer_age{false};
+    bool enable_honeypot{false};
+
+    int subnet_max_per{2};
+    int rate_limit_max_tokes{2};
+    double rate_limit_refill{10.0};
+    int lookup_validation_checks{1};
+    double peer_age_min_seconds{30.0};
+    int honeypot_count{10};
   };
 
   explicit Node(const Config& config);
@@ -70,6 +86,15 @@ class Node {
   std::vector<std::pair<std::string, std::string>> GetKeysInRange(NodeID start,
                                                                   NodeID end);
 
+  // security
+
+  SecurityPolicy& SecurityPolicy() { return security_policy_; }
+  const SecurityPolicy& SecurityPolicy() { return security_policy_; }
+
+  void DumpMetrics() const;
+
+  std::vector<NodeInfo> AlternativeNodes() const;
+
   // getters
 
   [[nodiscard]] NodeID ID() const { return id_; }
@@ -96,7 +121,7 @@ class Node {
 
   // helpers
 
-  std::optional<NodeInfo> ClosestPredecingNode(NodeID id);
+  std::optional<NodeInfo> ClosestPrecedingNode(NodeID id);
 
   bool IsAlive(const NodeAddress& address);
 
@@ -122,7 +147,10 @@ class Node {
   std::jthread check_predecessor_thread_;
 
   int next_finger_{0};
+
+  SecurityPolicy security_policy_;
+  std::shared_ptr<class HoneypotMonitor> honeypot_monitor_;
 };
 }  // namespace tsc::node
 
-#endif NODE_H
+#endif

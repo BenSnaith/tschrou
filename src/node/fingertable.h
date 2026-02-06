@@ -36,4 +36,4 @@ private:
 };
 } // namespace tsc::node
 
-#endif FINGERTABLE_H
+#endif

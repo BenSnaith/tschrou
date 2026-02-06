@@ -6,16 +6,17 @@
 #include <vector>
 
 #include "types/types.h"
-#include "node/node.h"
 
+namespace tsc::node {
+class Node;
+} // namespace tsc::node
 
 namespace tsc::tcp {
 using namespace tsc::type;
-using namespace tsc::node;
 
 class TcpServer {
 public:
-  explicit TcpServer(u16 port, Node* node);
+  explicit TcpServer(u16 port, node::Node* node);
   ~TcpServer();
 
   bool Start();
@@ -34,7 +35,7 @@ private:
   std::vector<std::byte> ProcessMessage(std::span<std::byte> message);
 
   u16 port_;
-  Node* node_;
+  node::Node* node_;
 
   int server_socket_ = -1;
   std::atomic<bool> running_{false};
@@ -42,4 +43,4 @@ private:
 };
 } // namespace tsc::tcp
 
-#endif TCP_SERVER_H
+#endif

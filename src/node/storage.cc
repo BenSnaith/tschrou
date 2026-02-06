@@ -8,7 +8,7 @@ void Storage::Put(const std::string& key, const std::string& value) {
   data_[key] = value;
 }
 
-std::optional<std::string> Storage::Get(const std::string& key) {
+std::optional<std::string> Storage::Get(const std::string& key) const {
   std::lock_guard lock(mutex_);
   auto it = data_.find(key);
   if(it != data_.end()) {

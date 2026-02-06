@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <expected>
+#include <vector>
 
 namespace tsc::type {
 // rust like types
@@ -32,7 +33,7 @@ using KeySet = std::vector<std::pair<std::string, std::string>>;
 // the original chord paper uses 160 bits for identifier
 // space however this is overkill for the project and would
 // require too much compute to even demonstrate.
-constexpr int kMBits = u32;
+constexpr int kMBits = 32;
 constexpr int kMaxID = UINT32_MAX;
 
 struct NodeAddress {
@@ -45,7 +46,7 @@ struct NodeAddress {
   }
 
   [[nodiscard]] std::string ToString() const {
-    return ip_ + std::to_string(port_);
+    return ip_ + ":" + std::to_string(port_);
   }
 
   std::string ip_;
@@ -93,4 +94,4 @@ inline bool InRangeExclusiveInclusive(NodeID id, NodeID start, NodeID end) {
 }
 } // namespace tsc::type
 
-#endif TYPES_H
+#endif

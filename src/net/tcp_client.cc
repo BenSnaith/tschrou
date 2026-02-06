@@ -17,14 +17,14 @@ namespace tsc::tcp {
 using namespace tsc::msg;
 using namespace tsc::type;
 int TcpClient::ConnectTo(const NodeAddress& target,
-                         std::chrono::milliseconds timeout) {
+                         [[maybe_unused]] std::chrono::milliseconds timeout) {
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if(sock < 0) {
     return -1;
   }
 
   int flags = fcntl(sock, F_GETFL, 0);
-  fnctl(sock, F_SETFL, flags | O_NONBLOCK);
+  fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 
   sockaddr_in addr{};
   addr.sin_family = AF_INET;
@@ -71,7 +71,7 @@ std::optional<std::vector<std::byte>> TcpClient::ReceiveMessage(
   tv.tv_usec = (timeout.count() % 1000) * 1000;
   setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-  std::vector<std::byte> buffer{4096};
+  std::vector<std::byte> buffer(4096);
   ssize_t received = recv(socket, buffer.data(), buffer.size(), 0);
 
   if(received < 0) {
@@ -164,14 +164,14 @@ bool TcpClient::Notify(const NodeAddress& target, const NodeInfo& self) {
 
 bool TcpClient::Ping(const NodeAddress& target) {
   PingMessage message;
-  auto response = SendRequest(target, message.Serialise(), std::chrono::milliseconds(2));
+  auto response = SendRequest(target, message.Serialise(), std::chrono::milliseconds(2000));
 
   if(!response) {
     return false;
   }
 
   try {
-    MessageType type = GetMessageType(*response);
+    MessageType type = *GetMessageType(*response);
     return type == MessageType::kPong;
   }
   catch(...) {
@@ -181,8 +181,8 @@ bool TcpClient::Ping(const NodeAddress& target) {
 }
 
 std::optional<std::string> TcpClient::Get(const NodeAddress& target,
-                                          const std::string& key) {
-  GetRequest request;
+                                          [[maybe_unused]] const std::string& key) {
+  GetRequest request{key};
   auto response = SendRequest(target, request.Serialise());
 
   if(!response) {
@@ -200,9 +200,9 @@ std::optional<std::string> TcpClient::Get(const NodeAddress& target,
   return std::nullopt;
 }
 
-bool TcpClient::Put(const NodeAddress& target, const std::string& key,
-                    const std::string& value) {
-  PutRequest request;
+bool TcpClient::Put(const NodeAddress& target, [[maybe_unused]] const std::string& key,
+                    [[maybe_unused]] const std::string& value) {
+  PutRequest request{key, value};
   auto response = SendRequest(target, request.Serialise());
 
   if(!response) {

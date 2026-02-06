@@ -1,4 +1,5 @@
 #include "net/tcp_server.h"
+#include "node/node.h"
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -14,6 +15,7 @@
 
 namespace tsc::tcp {
 using namespace tsc::msg;
+using namespace tsc::node;
 
 TcpServer::TcpServer(u16 port, Node* node) : port_(port), node_(node) {}
 
@@ -118,7 +120,7 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
     return {};
   }
 
-  MessageType type = GetMessageType(message);
+  MessageType type = *GetMessageType(message);
 
   try {
     switch (type) {

@@ -1,5 +1,7 @@
 #include "protocol/message.h"
 
+#include <algorithm>
+
 namespace tsc::msg {
 namespace {
 void WriteU32(std::vector<std::byte>& buff, u32 value) {
@@ -45,7 +47,9 @@ u16 ReadU16(const std::byte* data) {
 
 void WriteString(std::vector<std::byte>& data, std::string value) {
   WriteU32(data, static_cast<u32>(value.length()));
-  data.insert(data.end(), value.begin(), value.end());
+  std::ranges::transform(value,
+               std::back_inserter(data),
+               [](char c) { return static_cast<std::byte>(c); });
 }
 
 std::string ReadString(const u8* data) {
@@ -165,7 +169,7 @@ GetPredecessorResponse GetPredecessorResponse::Deserialise(
     std::span<std::byte> data) {
   GetPredecessorResponse response;
   std::byte* ptr = data.data() + 1;
-  response.has_predecessor_ = ptr++ != nullptr;
+  response.has_predecessor_ = *ptr++ != std::byte{0};
   if(response.has_predecessor_) {
     response.predecessor_ = ReadNodeInfo(ptr);
   }
@@ -263,7 +267,7 @@ std::vector<std::byte> GetResponse::Serialise() const {
 GetResponse GetResponse::Deserialise(std::span<std::byte> data) {
   GetResponse response;
   std::byte* ptr = data.data() + 1;
-  response.found_ = ptr++ != nullptr;
+  response.found_ = *ptr++ != std::byte{0};
   if(response.found_) {
     response.value_ = ReadString(ptr);
   }

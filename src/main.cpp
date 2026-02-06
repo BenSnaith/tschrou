@@ -1,5 +1,6 @@
-#include "node/Node.h"
-#include "util/Hash.h"
+#include "node/node.h"
+#include "util/hash.h"
+#include "types/types.h"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -68,10 +69,10 @@ void run_interactive(node::Node& node) {
             print_help();
         }
         else if (cmd == "state") {
-            node.();
+            node.PrintState();
         }
         else if (cmd == "fingers") {
-            node.print_finger_table();
+            node.PrintFingerTable();
         }
         else if (cmd == "put") {
             std::string key, value;
@@ -88,9 +89,9 @@ void run_interactive(node::Node& node) {
                 continue;
             }
 
-            if (node.put(key, value)) {
+            if (node.Put(key, value)) {
                 std::cout << "Stored: " << key << " -> " << value << "\n";
-                std::cout << "(Key ID: " << Hash::hash_key(key) << ")\n";
+                std::cout << "(Key ID: " << hsh::Hash::HashKey(key) << ")\n";
             } else {
                 std::cout << "Failed to store key\n";
             }
@@ -104,7 +105,7 @@ void run_interactive(node::Node& node) {
                 continue;
             }
 
-            auto value = node.get(key);
+            auto value = node.Get(key);
             if (value) {
                 std::cout << key << " -> " << *value << "\n";
             } else {
@@ -120,7 +121,7 @@ void run_interactive(node::Node& node) {
                 continue;
             }
 
-            std::cout << "hash(\"" << str << "\") = " << Hash::compute_hash(str) << "\n";
+            std::cout << "hash(\"" << str << "\") = " << hsh::Hash::ComputeHash(str) << "\n";
         }
         else {
             std::cout << "Unknown command: " << cmd << "\n";
@@ -136,13 +137,13 @@ int main(int argc, char* argv[]) {
     }
 
     std::string mode = argv[1];
-    uint16_t port = static_cast<uint16_t>(std::stoi(argv[2]));
+    auto port = static_cast<type::u16>(std::stoi(argv[2]));
 
-    Node::Config config;
-    config.ip = "127.0.0.1";
-    config.port = port;
+    node::Node::Config config;
+    config.ip_ = "127.0.0.1";
+    config.port_ = port;
 
-    Node node(config);
+    node::Node node(config);
     g_node = &node;
 
     // Set up signal handlers
@@ -152,7 +153,7 @@ int main(int argc, char* argv[]) {
     bool success = false;
 
     if (mode == "create") {
-        success = node.create();
+        success = node.Create();
     }
     else if (mode == "join") {
         if (argc < 4) {
@@ -169,11 +170,11 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        NodeAddress known_node;
-        known_node.ip = known.substr(0, colon);
-        known_node.port = static_cast<uint16_t>(std::stoi(known.substr(colon + 1)));
+        type::NodeAddress known_node;
+        known_node.ip_ = known.substr(0, colon);
+        known_node.port_ = static_cast<uint16_t>(std::stoi(known.substr(colon + 1)));
 
-        success = node.join(known_node);
+        success = node.Join(known_node);
     }
     else {
         std::cerr << "Unknown mode: " << mode << "\n";

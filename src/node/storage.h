@@ -17,7 +17,7 @@ public:
 
   void Put(const std::string& key, const std::string& value);
 
-  std::optional<std::string> Get(const std::string& key);
+  std::optional<std::string> Get(const std::string& key) const;
 
   bool Remove(const std::string& key);
 
@@ -47,4 +47,4 @@ private:
 };
 } // namespace tsc::node
 
-#endif STORAGE_H
+#endif
