@@ -2,12 +2,19 @@
 
 #include "fingertable.h"
 #include "net/tcp_client.h"
+#include "security/modules/honeypot_monitor.h"
+#include "security/modules/id_verification.h"
+#include "security/modules/subnet_diversity.h"
+#include "security/modules/peer_age_preference.h"
+#include "security/modules/lookup_validator.h"
+#include "security/modules/rate_limiter.h"
 
 #include <iostream>
 
 namespace tsc::node {
 using namespace tsc::tcp;
 using namespace tsc::hsh;
+using namespace tsc::sec;
 
 Node::Node(const Config& config)
     : config_(config), address_{.ip_ = config.ip_, .port_ = config.port_} {
@@ -18,6 +25,46 @@ Node::Node(const Config& config)
 
 Node::~Node() {
   Shutdown();
+}
+
+void Node::InitialiseSecurity(){
+  if (config_.enable_id_verification) {
+    security_policy_.AddModule(std::make_shared<mod::IDVerififaction>());
+    std::cout << "[Security] ID verification enabled for " << id_ << std::endl;
+  }
+  if (config_.enable_subnet_diversity) {
+    security_policy_.AddModule(std::make_shared<SubnetDiversity>(config_.subnet_max_per));
+  }
+  if (config_.enable_rate_limiting) {
+    RateLimiter::Config rl_cfg {
+      .max_tokens = config_.rate_limit_max_tokes,
+      .refill_rate = config_.rate_limit_refill,
+    };
+    security_policy_.AddModule(std::make_shared<RateLimiter>(rl_cfg));
+  }
+  if (config_.enable_peer_age) {
+    security_policy_.AddModule(
+      std::make_shared<PeerAgePreference>(config_.peer_age_min_seconds)
+    );
+  }
+  if (config_.enable_lookup_validation) {
+    auto alt_fn = [this]() { return AlternativeNodes(); };
+    security_policy_.AddModule(
+      std::make_shared<LookupValidator>(alt_fn, config_.lookup_validation_checks);
+    )
+  }
+  if (config_.enable_honeypot) {
+    auto get_fn = [this](const std::string& key) {
+      return Get(key);
+    };
+    auto put_fn = [this](const std::string& key, const std::string& val) {
+      return Put(key, val);
+    };
+    honeypot_monitor_ = std::make_shared<HoneypotMonitor>(
+      get_fn, put_fn, config_.honeypot_count;
+    )
+    security_policy_.AddModule(honeypot_monitor_);
+  }
 }
 
 bool Node::Create() {
@@ -59,6 +106,8 @@ bool Node::Join(const NodeAddress& known_node) {
   }
 
   finger_table_->InitialiseTo(*successor);
+
+  InitialiseSecurity();
 
   running_ = true;
   stabilise_thread_ = std::jthread(&Node::StabilisationLoop, this);
@@ -234,6 +283,35 @@ void Node::Stabilise() {
   }
 }
 
+std::vector<NodeInfo> Node::AlternativeNodes() const {
+  std::vector<NodeInfo> alternatives;
+
+  for (int i{}; i < FingerTable::kSize; i += 4) {
+    auto entry = finger_table_->Get(i);
+    if (entry && entry->id_ != id_) {
+      bool duplicate = false;
+      for (const auto& alt : alternatives) {
+        if (alt.id_ == entry->id_) {
+          duplicate = true;
+          break;
+        }
+      }
+      if (!duplicate) {
+        alternatives.push_back(*entry);
+      }
+    }
+  }
+
+  return alternatives;
+}
+
+void Node::DumpMetrics() const{
+  if (security_policy_.Empty()) {
+    std::cout << "METRICS:{\"modules\":[]}\n";
+    return;
+  }
+  std::cout << "METRICS:" << security_policy_.MetricsToJSON() << "\n";
+}
 
 void Node::FixFingers() {
   next_finger_ = (next_finger_ + 1) % FingerTable::kSize;

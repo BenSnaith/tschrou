@@ -30,7 +30,7 @@ public:
 private:
   void ServerLoop();
 
-  void HandleClient(int client_socket);
+  void HandleClient(int client_socket, const NodeAddress& sender);
 
   std::vector<std::byte> ProcessMessage(std::span<std::byte> message);
 

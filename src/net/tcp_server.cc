@@ -87,13 +87,21 @@ void TcpServer::ServerLoop() {
           server_socket_, reinterpret_cast<sockaddr*>(&client_addr), &addr_len);
 
       if (client_socket >= 0) {
-        HandleClient(client_socket);
+        char ip_str[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, ip_str, sizeof(ip_str));
+        u16 client_port = ntohs(client_addr.sin_port);
+
+        NodeAddress sender_addr {
+          .ip_ = std::string(ip_str),
+          .port_ = client_port,
+        };
+        HandleClient(client_socket, sender_addr);
       }
     }
   }
 }
 
-void TcpServer::HandleClient(int client_socket) {
+void TcpServer::HandleClient(int client_socket, const NodeAddress& sender) {
   timeval tv{};
   tv.tv_sec = 5;
   tv.tv_usec = 0;
@@ -104,6 +112,15 @@ void TcpServer::HandleClient(int client_socket) {
 
   if (received > 0) {
     buffer.resize(received);
+
+    auto msg_type = GetMessageType(buffer);
+    if (msg_type) {
+      auto& policy = node_->GetSecurityPolicy();
+      if (!policy.AllowMessage(sender, *msg_type)) {
+        close(client_socket);
+        return;
+      }
+    }
 
     auto response = ProcessMessage(buffer);
 

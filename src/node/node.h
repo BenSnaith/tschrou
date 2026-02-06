@@ -11,12 +11,13 @@
 #include "net/tcp_client.h"
 #include "node/fingertable.h"
 #include "node/storage.h"
+#include "security/security_module.h"
 #include "util/hash.h"
-
 
 namespace tsc::node {
 using namespace tsc::type;
 using namespace tsc::tcp;
+using namespace tsc::sec;
 class Node {
  public:
   struct Config {
@@ -88,8 +89,8 @@ class Node {
 
   // security
 
-  SecurityPolicy& SecurityPolicy() { return security_policy_; }
-  const SecurityPolicy& SecurityPolicy() { return security_policy_; }
+  SecurityPolicy& GetSecurityPolicy() { return security_policy_; }
+  const SecurityPolicy& GetSecurityPolicy() const { return security_policy_; };
 
   void DumpMetrics() const;
 
@@ -107,6 +108,8 @@ class Node {
   void PrintFingerTable() const;
 
  private:
+  void InitialiseSecurity();
+
   // heartbeat
 
   void Stabilise();
