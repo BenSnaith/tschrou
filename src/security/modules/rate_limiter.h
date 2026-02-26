@@ -11,7 +11,8 @@ public:
     double refill_rate = 10.0;
   };
 
-  explicit RateLimiter(const Config& config = {}) : config_(config) {}
+  // respecified due to weird compiler error
+  explicit RateLimiter(const Config& config = {.max_tokens = 50, .refill_rate = 10.0}) : config_(config) {}
 
   bool AllowMessage(const NodeAddress& sender, MessageType type) override {
     // needed for liveness

@@ -29,29 +29,29 @@ Node::~Node() {
 
 void Node::InitialiseSecurity(){
   if (config_.enable_id_verification) {
-    security_policy_.AddModule(std::make_shared<mod::IDVerififaction>());
+    security_policy_.AddModule(std::make_shared<mod::IDVerification>());
     std::cout << "[Security] ID verification enabled for " << id_ << std::endl;
   }
   if (config_.enable_subnet_diversity) {
-    security_policy_.AddModule(std::make_shared<SubnetDiversity>(config_.subnet_max_per));
+    security_policy_.AddModule(std::make_shared<mod::SubnetDiversity>(config_.subnet_max_per));
   }
   if (config_.enable_rate_limiting) {
-    RateLimiter::Config rl_cfg {
+    mod::RateLimiter::Config rl_cfg {
       .max_tokens = config_.rate_limit_max_tokes,
       .refill_rate = config_.rate_limit_refill,
     };
-    security_policy_.AddModule(std::make_shared<RateLimiter>(rl_cfg));
+    security_policy_.AddModule(std::make_shared<mod::RateLimiter>(rl_cfg));
   }
   if (config_.enable_peer_age) {
     security_policy_.AddModule(
-      std::make_shared<PeerAgePreference>(config_.peer_age_min_seconds)
+      std::make_shared<mod::PeerAgePreference>(config_.peer_age_min_seconds)
     );
   }
   if (config_.enable_lookup_validation) {
     auto alt_fn = [this]() { return AlternativeNodes(); };
     security_policy_.AddModule(
-      std::make_shared<LookupValidator>(alt_fn, config_.lookup_validation_checks);
-    )
+      std::make_shared<mod::LookupValidator>(alt_fn, config_.lookup_validation_checks)
+    );
   }
   if (config_.enable_honeypot) {
     auto get_fn = [this](const std::string& key) {
@@ -60,9 +60,9 @@ void Node::InitialiseSecurity(){
     auto put_fn = [this](const std::string& key, const std::string& val) {
       return Put(key, val);
     };
-    honeypot_monitor_ = std::make_shared<HoneypotMonitor>(
-      get_fn, put_fn, config_.honeypot_count;
-    )
+    honeypot_monitor_ = std::make_shared<mod::HoneypotMonitor>(
+      get_fn, put_fn, config_.honeypot_count
+    );
     security_policy_.AddModule(honeypot_monitor_);
   }
 }

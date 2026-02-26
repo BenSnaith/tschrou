@@ -14,6 +14,8 @@
 #include "security/security_module.h"
 #include "util/hash.h"
 
+namespace tsc::sec::mod { class HoneypotMonitor; }
+
 namespace tsc::node {
 using namespace tsc::type;
 using namespace tsc::tcp;
@@ -152,7 +154,8 @@ class Node {
   int next_finger_{0};
 
   SecurityPolicy security_policy_;
-  std::shared_ptr<class HoneypotMonitor> honeypot_monitor_;
+  // this might be a terrible idea :/
+  std::shared_ptr<mod::HoneypotMonitor> honeypot_monitor_;
 };
 }  // namespace tsc::node
 

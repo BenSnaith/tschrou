@@ -39,10 +39,10 @@ public:
     return true;
   }
 
-  virtual void Tick() = 0;
+  virtual void Tick() {}
 
   virtual SecurityMetrics Metrics() const {
-    return {.module_name = Name(), .counter = {}, .gauges = {}};
+    return {.module_name = Name(), .counters = {}, .gauges = {}};
   }
 
   virtual void ResetMetrics() = 0;
