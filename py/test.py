@@ -1,13 +1,129 @@
 import argparse
+import hashlib
 import json
 import os
 import signal
+import socket
+import struct
 import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+
+class ChordClient:
+    FIND_SUCCESSOR_REQ = 0x01
+    FIND_SUCCESSOR_RESP = 0x02
+    PING = 0x07
+    PONG = 0x08
+    GET_REQ = 0x10
+    GET_RESP = 0x11
+    PUT_REQ = 0x12
+    PUT_RESP = 0x13
+
+    TIMEOUT = 3.0
+
+    @staticmethod
+    def hash_key(key: str) -> int:
+        digest = hashlib.sha1(key.encode()).digest()
+        return int.from_bytes(digest[:4], byteorder="little")
+
+    @staticmethod
+    def _encode_string(s: str) -> bytes:
+        encoded = s.encode()
+        return struct.pack(">I", len(encoded)) + encoded
+
+    @staticmethod
+    def _decode_string(data: bytes, offset: int) -> tuple[str, int]:
+        length = struct.unpack(">I", data[offset:offset + 4])[0]
+        offset += 4
+        s = data[offset:offset + length].decode()
+        offset += length
+        return s, offset
+
+    @staticmethod
+    def _send_recv(host: str, port: int, payload: bytes) -> Optional[bytes]:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(ChordClient.TIMEOUT)
+            sock.connect((host, port))
+            sock.sendall(payload)
+            data = sock.recv(4096)
+            sock.close()
+            return data if data else None
+        except Exception:
+            return None
+
+    @staticmethod
+    def ping(host: str, port: int) -> bool:
+        resp = ChordClient._send_recv(host, port, bytes([ChordClient.PING]))
+        return resp is not None and len(resp) >= 1 and resp[0] == ChordClient.PONG
+
+    @staticmethod
+    def find_successor(host: str, port: int, key_id: int) -> Optional[tuple[int, str, int]]:
+        payload = bytes([ChordClient.FIND_SUCCESSOR_REQ]) + struct.pack(">I", key_id)
+        resp = ChordClient._send_recv(host, port, payload)
+
+        if resp is None or len(resp) < 2:
+            return None
+
+        if resp[0] != ChordClient.FIND_SUCCESSOR_RESP:
+            return None
+
+        found = resp[1]
+        if not found:
+            return None
+
+        offset = 2
+        node_id = struct.unpack(">I", resp[offset:offset + 4])[0]
+        offset += 4
+        ip, offset = ChordClient._decode_string(resp, offset)
+        node_port = struct.unpack(">H", resp[offset:offset + 2])[0]
+        return (node_id, ip, node_port)
+
+    @staticmethod
+    def put(host: str, port: int, key: str, value: str) -> bool:
+        key_id = ChordClient.hash_key(key)
+        target = ChordClient.find_successor(host, port, key_id)
+
+        if target is None:
+            return False
+
+        _, target_ip, target_port = target
+        payload = (bytes([ChordClient.PUT_REQ])
+                   + ChordClient._encode_string(key)
+                   + ChordClient._encode_string(value))
+        resp = ChordClient._send_recv(target_ip, target_port, payload)
+
+        if resp is None or len(resp) < 2:
+            return False
+        return resp[0] == ChordClient.PUT_RESP and resp[1] != 0
+
+    @staticmethod
+    def get(host: str, port: int, key: str) -> Optional[str]:
+        key_id = ChordClient.hash_key(key)
+        target = ChordClient.find_successor(host, port, key_id)
+
+        if target is None:
+            return None
+
+        _, target_ip, target_port = target
+        payload = (bytes([ChordClient.GET_REQ])
+                   + ChordClient._encode_string(key))
+        resp = ChordClient._send_recv(target_ip, target_port, payload)
+
+        if resp is None or len(resp) < 2:
+            return None
+        if resp[0] != ChordClient.GET_RESP:
+            return None
+
+        found = resp[1]
+        if not found:
+            return None
+
+        value, _ = ChordClient._decode_string(resp, 2)
+        return value
 
 DEFAULT_PORT = 9000
 STABILISE_WAIT = 4             # seconds to wait for ring to stabilise
@@ -90,7 +206,7 @@ SCENARIOS = {
     ),
     "eclipse_peer_age": Scenario(
         name="eclipse_peer_age",
-        security_flags=["--peer-age" "--age-min", "5"],
+        security_flags=["--peer-age", "--age-min", "5"],
         attack_type="eclipse",
         num_sybil=NUM_MALICIOUS_NODES,
         description="Eclipse attack with peer age preference",
@@ -124,7 +240,7 @@ class NodeProcess:
         self.binary = binary
         self.port = port
         self.mode = mode
-        self.known_addr = known_addr,
+        self.known_addr = known_addr
         self.security_flags = security_flags or []
         self.process: Optional[subprocess.Popen] = None
 
@@ -148,6 +264,7 @@ class NodeProcess:
                 stderr = self.process.stderr.read()
                 print(f"[FAIL] Node on port {self.port} exited: {stderr}")
                 return False
+            return True
         except Exception as e:
             print(f"[FAIL] Could not start node on port {self.port}: {e}")
             return False
@@ -181,7 +298,7 @@ class NodeProcess:
                 output_lines.append(line.strip())
 
             for line in output_lines:
-                if line.startswith("Metrics:"):
+                if line.startswith("METRICS:"):
                     json_str = line[len("METRICS:"):]
                     return json.loads(json_str)
         except Exception as e:
@@ -226,7 +343,7 @@ class TestRing:
 
         known_addr = f"127.0.0.1:{self.base_port}"
         for i in range(1, num_nodes):
-            port = self.base_port + 1
+            port = self.base_port + i
             joiner = NodeProcess(
                 self.binary, port, "join",
                 known_addr=known_addr,
@@ -267,11 +384,13 @@ class TestRing:
 
     def store_test_data(self, num_keys: int) -> dict[str, str]:
         test_data = {}
+        stored = 0
         for i in range(num_keys):
             key = f"test_key_{i}"
             value = f"test_value_{i}"
             test_data[key] = value
-            self.nodes[0].put(key, value)
+            if ChordClient.put("127.0.0.1", self.base_port, key, value):
+                stored += 1
             time.sleep(0.05)
 
         print(f"Stored {num_keys} test key-value pairs")
@@ -279,7 +398,19 @@ class TestRing:
         return test_data
 
     def verify_data(self, test_data: dict[str, str]) -> tuple[int, int]:
-        return len(test_data), len(test_data)
+        retrieved = 0
+        correct = 0
+
+        for key, expected_value in test_data.items():
+            result = ChordClient.get("127.0.0.1", self.base_port, key)
+            if result is not None:
+                retrieved += 1
+                if result == expected_value:
+                    correct += 1
+
+        print(f"Verified: {correct}/{len(test_data)} correct")
+        print(f"{retrieved}/{len(test_data)} retrieved")
+        return retrieved, correct
 
     def collect_metrics(self) -> list[dict]:
         all_metrics = []
@@ -296,7 +427,7 @@ class TestRing:
         return all_metrics
 
     def teardown(self):
-        print(f"Treating down {len(self.nodes)} nodes...")
+        print(f"Tearing down {len(self.nodes)} nodes...")
         for node in self.nodes:
             node.stop()
         self.nodes.clear()
@@ -346,7 +477,7 @@ def run_scenario(binary: str, scenario: Scenario,
     print(f"SCENARIO: {scenario.name}")
     print(f"\tAttack: {scenario.attack_type}")
     print(f"\tSecurity: {scenario.security_flags or '(none)'}")
-    print(f"\tDescription:: {scenario.description}")
+    print(f"\tDescription: {scenario.description}")
     print(f"{'=' * 60}")
 
     base_port = DEFAULT_PORT + port_offset
@@ -393,15 +524,15 @@ def save_results_json(results: list[ScenarioResult], output_dir: str = "results"
     data = []
     for r in results:
         data.append({
-            "scenario": r,
-            "attack_type": r,
-            "security_flags": r,
-            "keys_stored": r,
-            "keys_retrieved": r,
-            "keys_correct": r,
-            "lookup_success_rate": r,
-            "duration_seconds": r,
-            "module_metrics": r,
+            "scenario": r.scenario_name,
+            "attack_type": r.attack_type,
+            "security_flags": r.security_flags,
+            "keys_stored": r.keys_stored,
+            "keys_retrieved": r.keys_retrieved,
+            "keys_correct": r.keys_correct,
+            "lookup_success_rate": r.lookup_success_rate,
+            "duration_seconds": r.duration_seconds,
+            "module_metrics": r.module_metrics,
         })
 
     path = f"{output_dir}/result.json"
@@ -447,10 +578,10 @@ def main():
         for name in names:
             if name in SCENARIOS:
                 selected.append(SCENARIOS[name])
-        else:
-            print(f"Unknown Scenario: {name}")
-            print(f"Available: {', '.join(SCENARIOS.keys())}")
-        return
+            else:
+                print(f"Unknown Scenario: {name}")
+                print(f"Available: {', '.join(SCENARIOS.keys())}")
+                return
 
     if not os.path.isfile(args.binary):
         print(f"Binary not found {args.binary}")
