@@ -130,6 +130,38 @@ void run_interactive(node::Node& node) {
     }
 }
 
+void parse_flags(int argc, char* argv[], int start_idx, node::Node::Config& config) {
+  for (int i = start_idx; i < argc; ++i) {
+    std::string flag = argv[i];
+
+    // Security flags
+    if (flag == "--id-verify")           config.enable_id_verification = true;
+    else if (flag == "--subnet-diversity") config.enable_subnet_diversity = true;
+    else if (flag == "--rate-limit")      config.enable_rate_limiting = true;
+    else if (flag == "--lookup-validate")  config.enable_lookup_validation = true;
+    else if (flag == "--peer-age")         config.enable_peer_age = true;
+    else if (flag == "--honeypot")         config.enable_honeypot = true;
+    else if (flag == "--all-security") {
+      config.enable_id_verification = true;
+      config.enable_subnet_diversity = true;
+      config.enable_rate_limiting = true;
+      config.enable_lookup_validation = true;
+      config.enable_peer_age = true;
+      config.enable_honeypot = true;
+    }
+
+    else if (flag == "--malicious")        config.is_malicious = true;
+    else if (flag == "--ip" && i + 1 < argc) config.ip_ = argv[++i];
+
+    else if (flag == "--subnet-max" && i + 1 < argc) config.subnet_max_per = std::stoi(argv[++i]);
+    else if (flag == "--rl-tokens" && i + 1 < argc)  config.rate_limit_max_tokes = std::stoi(argv[++i]);
+    else if (flag == "--rl-refill" && i + 1 < argc)  config.rate_limit_refill = std::stod(argv[++i]);
+    else if (flag == "--lv-checks" && i + 1 < argc)  config.lookup_validation_checks = std::stoi(argv[++i]);
+    else if (flag == "--age-min" && i + 1 < argc)    config.peer_age_min_seconds = std::stod(argv[++i]);
+    else if (flag == "--hp-count" && i + 1 < argc)   config.honeypot_count = std::stoi(argv[++i]);
+  }
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 3) {
         print_usage(argv[0]);
@@ -139,9 +171,17 @@ int main(int argc, char* argv[]) {
     std::string mode = argv[1];
     auto port = static_cast<type::u16>(std::stoi(argv[2]));
 
+
+    int flags_start = (mode == "join") ? 4 : 3;
     node::Node::Config config;
     config.ip_ = "127.0.0.1";
     config.port_ = port;
+    parse_flags(argc, argv, flags_start, config);
+
+    if (config.is_malicious) {
+      std::cout << "[MALICIOUS] Node running in malicious mode at "
+                << config.ip_ << ":" << config.port_ << "\n";
+    }
 
     node::Node node(config);
     g_node = &node;

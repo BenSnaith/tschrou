@@ -33,8 +33,12 @@ bool TcpServer::Start() {
 
   sockaddr_in addr{};
   addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = INADDR_ANY;
   addr.sin_port = htons(port_);
+
+  const auto& node_ip = node_->Address().ip_;
+  if (inet_pton(AF_INET, node_ip.c_str(), &addr.sin_addr) <= 0) {
+    addr.sin_addr.s_addr = INADDR_ANY;
+  }
 
   if (bind(server_socket_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) <
       0) {
@@ -180,6 +184,12 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
         return PongMessage().Serialise();
       }
       case MessageType::kGetRequest: {
+        if (node_->IsMalicious()) {
+          GetResponse response;
+          response.found_ = false;
+          return response.Serialise();
+        }
+
         auto req = GetRequest::Deserialise(message);
         auto value = node_->LocalGet(req.key_);
 
@@ -194,6 +204,12 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
         return response.Serialise();
       }
       case MessageType::kPutRequest: {
+        if (node_->IsMalicious()) {
+          PutResponse response;
+          response.success_ = true;
+          return response.Serialise();
+        }
+
         auto req = PutRequest::Deserialise(message);
         node_->LocalPut(req.key_, req.value_);
 
@@ -202,6 +218,12 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
         return response.Serialise();
       }
       case MessageType::kTransferKeysRequest: {
+        if (node_->IsMalicious()) {
+          // just return no keys if malicious
+          TransferKeysResponse response;
+          return response.Serialise();
+        }
+
         auto req = TransferKeysRequest::Deserialise(message);
         auto keys = node_->GetKeysInRange(req.start_, req.end_);
 

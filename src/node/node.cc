@@ -80,6 +80,8 @@ bool Node::Create() {
     return false;
   }
 
+  InitialiseSecurity();
+
   running_ = true;
   stabilise_thread_ = std::jthread(&Node::StabilisationLoop, this);
   fix_fingers_thread_ = std::jthread(&Node::FixFingersLoop, this);
@@ -158,14 +160,20 @@ std::optional<NodeInfo> Node::FindSuccessor(NodeID node_id) {
 
     auto closest = ClosestPrecedingNode(node_id);
 
-    if (!closest || closest->id_ == id_) {
+    if (!closest || closest->id_ == id_ || !security_policy_.AllowNode(*closest)) {
       return successor_;
     }
 
     target = closest->address_;
   }
 
-  return TcpClient::FindSuccessor(target, node_id);
+  auto result = TcpClient::FindSuccessor(target, node_id);
+
+  if (!security_policy_.ValidateLookup(node_id, *result)) {
+    return std::nullopt;
+  }
+
+  return result;
 }
 
 std::optional<NodeInfo> Node::ClosestPrecedingNode(NodeID node_id) {
@@ -181,6 +189,10 @@ std::optional<NodeInfo> Node::ClosestPrecedingNode(NodeID node_id) {
 }
 
 void Node::Notify(const NodeInfo& node) {
+  if (!security_policy_.AllowNode(node)) {
+    return;
+  }
+
   std::lock_guard lock(ring_mutex_);
 
   if (!predecessor_ || InRangeExclusive(node.id_, predecessor_->id_, id_)) {
@@ -263,13 +275,18 @@ void Node::Stabilise() {
   auto predecessor = TcpClient::GetPredecessor(successor_copy->address_);
 
   if (predecessor) {
-    std::lock_guard lock(ring_mutex_);
+    if (!security_policy_.AllowNode(*predecessor)) {
+      // just do nothing
+    }
+    else {
+      std::lock_guard lock(ring_mutex_);
 
-    if (InRangeExclusive(predecessor->id_, id_, successor_->id_)) {
-      std::cout << "Stabilise: updating successor from " << successor_->id_
-        << " to " << predecessor->id_ << "\n";
-      successor_ = predecessor;
-      finger_table_->Set(0, *predecessor);
+      if (InRangeExclusive(predecessor->id_, id_, successor_->id_)) {
+        std::cout << "Stabilise: updating successor from " << successor_->id_
+          << " to " << predecessor->id_ << "\n";
+        successor_ = predecessor;
+        finger_table_->Set(0, *predecessor);
+      }
     }
   }
 
@@ -281,6 +298,8 @@ void Node::Stabilise() {
   if (successor_copy && successor_copy->id_ != id_) {
     TcpClient::Notify(successor_copy->address_, Info());
   }
+
+  security_policy_.Tick();
 }
 
 std::vector<NodeInfo> Node::AlternativeNodes() const {
@@ -319,7 +338,7 @@ void Node::FixFingers() {
   NodeID finger_id = finger_table_->GetStart(next_finger_);
   auto successor = FindSuccessor(finger_id);
 
-  if (successor) {
+  if (successor && security_policy_.AllowNode(*successor)) {
     finger_table_->Set(next_finger_, *successor);
   }
 }

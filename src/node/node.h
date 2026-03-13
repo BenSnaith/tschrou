@@ -40,12 +40,15 @@ class Node {
     bool enable_peer_age{false};
     bool enable_honeypot{false};
 
-    int subnet_max_per{2};
-    int rate_limit_max_tokes{2};
-    double rate_limit_refill{10.0};
+    int subnet_max_per{10};
+    int rate_limit_max_tokes{100};
+    double rate_limit_refill{50.0};
     int lookup_validation_checks{1};
     double peer_age_min_seconds{30.0};
     int honeypot_count{10};
+
+    // used for the python test
+    bool is_malicious{false};
   };
 
   explicit Node(const Config& config);
@@ -108,6 +111,8 @@ class Node {
 
   void PrintState() const;
   void PrintFingerTable() const;
+
+  bool IsMalicious() const { return config_.is_malicious; };
 
  private:
   void InitialiseSecurity();

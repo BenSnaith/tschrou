@@ -236,9 +236,11 @@ SCENARIOS = {
 class NodeProcess:
     def __init__(self, binary: str, port: int, mode: str,
                  known_addr: Optional[str] = None,
-                 security_flags: Optional[list[str]] = None):
+                 security_flags: Optional[list[str]] = None,
+                 ip: str = "127.0.0.1"):
         self.binary = binary
         self.port = port
+        self.ip = ip
         self.mode = mode
         self.known_addr = known_addr
         self.security_flags = security_flags or []
@@ -249,6 +251,7 @@ class NodeProcess:
         if self.mode == "join" and self.known_addr:
             cmd.append(self.known_addr)
         cmd.extend(self.security_flags)
+        cmd.extend(["--ip", self.ip])
 
         try:
             self.process = subprocess.Popen(
@@ -333,9 +336,11 @@ class TestRing:
     def create_ring(self, num_nodes: int) -> bool:
         print(f"Creating a ring with {num_nodes} nodes (ports {self.base_port}-{self.base_port+num_nodes-1})")
 
+        creator_ip = "127.0.0.1"
         creator = NodeProcess(
             self.binary, self.base_port, "create",
-            security_flags=self.security_flags
+            security_flags=self.security_flags,
+            ip=creator_ip
         )
         if not creator.start():
             return False
@@ -344,10 +349,12 @@ class TestRing:
         known_addr = f"127.0.0.1:{self.base_port}"
         for i in range(1, num_nodes):
             port = self.base_port + i
+            node_ip = f"127.0.0.{i + 1}"
             joiner = NodeProcess(
                 self.binary, port, "join",
                 known_addr=known_addr,
-                security_flags=self.security_flags
+                security_flags=self.security_flags,
+                ip=node_ip
             )
             if not joiner.start():
                 print(f"[WARN] Node on port {port} failed to start, continuing")
@@ -369,10 +376,13 @@ class TestRing:
 
         for i in range(count):
             port = start_port + i
+            sybil_ip = f"127.0.1.{i + 1}"
+            flags = list(sybil_flags or []) + ["--malicious"]
             node = NodeProcess(
                 self.binary, port, "join",
                 known_addr=known_addr,
-                security_flags=sybil_flags or []
+                security_flags=flags,
+                ip = sybil_ip
             )
             if node.start():
                 sybil_nodes.append(node)
@@ -535,7 +545,7 @@ def save_results_json(results: list[ScenarioResult], output_dir: str = "results"
             "module_metrics": r.module_metrics,
         })
 
-    path = f"{output_dir}/result.json"
+    path = f"{output_dir}/result-{time.time_ns()}.json"
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
     print(f"Saved: {path}")
