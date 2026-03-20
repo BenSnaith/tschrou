@@ -1,0 +1,34 @@
+[
+  {
+    "scenario": "sybil_no_defence",
+    "attack_type": "sybil",
+    "security_flags": [],
+    "keys_stored": 50,
+    "keys_retrieved": 13,
+    "keys_correct": 13,
+    "lookup_success_rate": 0.26,
+    "duration_seconds": 51.042911529541016,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_all_defence",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--id-verify",
+      "--rate-limit",
+      "--peer-age",
+      "--age-min",
+      "3",
+      "--rl-tokens",
+      "100",
+      "--rl-refill",
+      "50"
+    ],
+    "keys_stored": 50,
+    "keys_retrieved": 23,
+    "keys_correct": 23,
+    "lookup_success_rate": 0.46,
+    "duration_seconds": 56.96272277832031,
+    "module_metrics": []
+  }
+]

@@ -18,9 +18,10 @@ public:
   using GetFn = std::function<std::optional<std::string>(const std::string&)>;
   using PutFn = std::function<bool(const std::string&, const std::string&)>;
 
-  HoneypotMonitor(GetFn get_fn, PutFn put_fn, int num_sentinels = 10)
+  HoneypotMonitor(GetFn get_fn, PutFn put_fn, int num_sentinels = 10, double check_interval_seconds = 10.0)
     : get_fn_(std::move(get_fn))
     , put_fn_(std::move(put_fn))
+    , check_interval_(check_interval_seconds)
   {
     for (int i = 0; i < num_sentinels; ++i) {
       sentinels_.push_back({
@@ -39,11 +40,20 @@ public:
         std::cerr << "[Honeypot] Failed to place sentinel: " << sentinel.key << '\n';
       }
     }
+    sentinels_placed_ = true;
+    last_check_ = std::chrono::high_resolution_clock::now();
     std::cout << "[Honeypot] Placed << " << placed_count_.load()
-    << "/" << sentinels_.size() << '\n';
+    << "/" << sentinels_.size() << " Sentinels\n";
   }
 
   void Tick() override {
+    if (!sentinels_placed_) { return; }
+
+    auto now = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration<double>(now - last_check_);
+    if (elapsed.count() < check_interval_) { return; }
+
+    last_check_ = now;
     VerifySentinels();
   }
 
@@ -104,6 +114,10 @@ private:
   GetFn get_fn_;
   PutFn put_fn_;
   std::vector<Sentinel> sentinels_;
+  double check_interval_;
+
+  bool sentinels_placed_{false};
+  std::chrono::high_resolution_clock::time_point last_check_;
 
   std::atomic<u64> placed_count_{0};
   std::atomic<u64> checks_count_{0};

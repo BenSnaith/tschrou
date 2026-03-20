@@ -1,6 +1,9 @@
 #ifndef SUBNET_DIVERSITY_H
 #define SUBNET_DIVERSITY_H
 
+#include <unordered_set>
+
+
 #include "security/security_module.h"
 
 namespace tsc::sec::mod {
@@ -13,29 +16,44 @@ public:
     std::string subnet = ExtractSubnet(node.address_.ip_);
 
     std::lock_guard lock(mutex_);
-    auto it = subnet_counts_.find(subnet);
-    int current = (it != subnet_counts_.end()) ? it->second : 0;
+    auto& ids = subnet_counts_[subnet];
 
-    if (current >= max_per_subnet_) {
+    if (ids.contains(node.id_)) {
+      return true;
+    }
+
+    if (static_cast<int>(ids.size()) >= max_per_subnet_) {
       ++rejected_count_;
       std::cerr << "[SubnetDiversity] Rejected node" << node.id_
                 << " from subnet " << subnet
-                << "(count " << current << " >= max" << max_per_subnet_
+                << "(count " << ids.size() << " >= max " << max_per_subnet_
                 << ")\n";
       return false;
     }
 
-    subnet_counts_[subnet] = current + 1;
+    ids.insert(node.id_);
     ++accepted_count_;
     return true;
+  }
+
+  void Tick() override {
+    std::lock_guard lock(mutex_);
+    auto it = subnet_counts_.begin();
+    while (it != subnet_counts_.end()) {
+      if (it->second.empty()) {
+        it = subnet_counts_.erase(it);
+      } else {
+        ++it;
+      }
+    }
   }
 
   void NodeRemoved(const NodeInfo& node) {
     std::string subnet = ExtractSubnet(node.address_.ip_);
     std::lock_guard lock(mutex_);
     auto it = subnet_counts_.find(subnet);
-    if (it == subnet_counts_.end() && it->second > 0) {
-      it->second--;
+    if (it != subnet_counts_.end()) {
+      it->second.erase(node.id_);
     }
   }
 
@@ -70,7 +88,7 @@ private:
   }
 
   int max_per_subnet_{};
-  std::unordered_map<std::string, int> subnet_counts_;
+  std::unordered_map<std::string, std::unordered_set<NodeID>> subnet_counts_;
   mutable std::mutex mutex_;
   std::atomic<u64> accepted_count_{0};
   std::atomic<u64> rejected_count_{0};

@@ -66,7 +66,7 @@ class Node {
 
   // core operations
 
-  std::optional<NodeInfo> FindSuccessor(NodeID node_id);
+  std::optional<NodeInfo> FindSuccessor(NodeID node_id, bool validate = false);
 
   void Notify(const NodeInfo& node);
 

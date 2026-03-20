@@ -34,11 +34,7 @@ bool TcpServer::Start() {
   sockaddr_in addr{};
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port_);
-
-  const auto& node_ip = node_->Address().ip_;
-  if (inet_pton(AF_INET, node_ip.c_str(), &addr.sin_addr) <= 0) {
-    addr.sin_addr.s_addr = INADDR_ANY;
-  }
+  addr.sin_addr.s_addr = INADDR_ANY;
 
   if (bind(server_socket_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) <
       0) {

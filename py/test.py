@@ -22,7 +22,7 @@ class ChordClient:
     PUT_REQ = 0x12
     PUT_RESP = 0x13
 
-    TIMEOUT = 3.0
+    TIMEOUT = 1.0
 
     @staticmethod
     def hash_key(key: str) -> int:
@@ -125,13 +125,14 @@ class ChordClient:
         value, _ = ChordClient._decode_string(resp, 2)
         return value
 
-DEFAULT_PORT = 9000
-STABILISE_WAIT = 4             # seconds to wait for ring to stabilise
+DEFAULT_PORT = 10000
+STABILISE_WAIT = 6             # seconds to wait for ring to stabilise
 ATTACK_DURATION = 10           # seconds to run after the attack
 METRICS_DELAY = 2              # seconds to wait after attack before collecting metrics
 NUM_LEGIT_NODES = 5
 NUM_MALICIOUS_NODES = 10       # for eclipse/sybil attacks
 NUM_TEST_KEYS = 50             # key-value pairs for integrity testing
+VERBOSE = False
 
 @dataclass
 class ScenarioResult:
@@ -182,6 +183,13 @@ SCENARIOS = {
         num_sybil=NUM_MALICIOUS_NODES,
         description="Sybil attack with id verification",
     ),
+    "sybil_lookup_validate": Scenario(
+        name="sybil_lookup_validate",
+        security_flags=["--lookup-validate"],
+        attack_type="sybil",
+        num_sybil=NUM_MALICIOUS_NODES,
+        description="Sybil attack with lookup validation",
+    ),
     "sybil_subnet_diversity": Scenario(
         name="sybil_subnet_diversity",
         security_flags=["--subnet-diversity"],
@@ -191,7 +199,9 @@ SCENARIOS = {
     ),
     "sybil_all_defence": Scenario(
         name="sybil_all_defence",
-        security_flags=["--all-security"],
+        security_flags=["--id-verify", "--rate-limit",
+                        "--peer-age", "--age-min", "3",
+                        "--rl-tokens", "100", "--rl-refill", "50"],
         attack_type="sybil",
         num_sybil=NUM_MALICIOUS_NODES,
         description="Sybil attack with all defences",
@@ -213,7 +223,9 @@ SCENARIOS = {
     ),
     "eclipse_all_defence": Scenario(
         name="eclipse_all_defence",
-        security_flags=["--all-security"],
+        security_flags=["--id-verify", "--rate-limit",
+                        "--peer-age", "--age-min", "3",
+                        "--rl-tokens", "100", "--rl-refill", "50"],
         attack_type="eclipse",
         num_sybil=NUM_MALICIOUS_NODES,
         description="Eclipse attack with all defences",
@@ -253,19 +265,25 @@ class NodeProcess:
         cmd.extend(self.security_flags)
         cmd.extend(["--ip", self.ip])
 
+        if VERBOSE:
+            print(f"    [CMD] {' '.join(cmd)}")
+
         try:
             self.process = subprocess.Popen(
                 cmd,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=None if VERBOSE else subprocess.PIPE,
                 text=True,
             )
             # wait to bind
             time.sleep(0.3)
             if self.process.poll() is not None:
-                stderr = self.process.stderr.read()
-                print(f"[FAIL] Node on port {self.port} exited: {stderr}")
+                if not VERBOSE and self.process.stderr:
+                    stderr = self.process.stderr.read()
+                    print(f"[FAIL] Node on port {self.port} exited: {stderr}")
+                else:
+                    print(f"[FAIL] Node on port {self.ip}:{self.port} exited immediately")
                 return False
             return True
         except Exception as e:
@@ -417,6 +435,10 @@ class TestRing:
                 retrieved += 1
                 if result == expected_value:
                     correct += 1
+                elif VERBOSE:
+                    print(f"    [WRONG] {key}: expected '{expected_value}', got '{result}'")
+            elif VERBOSE:
+                print(f"    [MISS] {key}: lookup failed or not found")
 
         print(f"Verified: {correct}/{len(test_data)} correct")
         print(f"{retrieved}/{len(test_data)} retrieved")
@@ -570,13 +592,20 @@ def main():
         "--list", action="store_true",
         help="List available scenarios and exit"
     )
+    parser.add_argument(
+        "--verbose", action="store_true",
+        help="Show node stderr output for debugging"
+    )
 
     args = parser.parse_args()
+
+    global VERBOSE
+    VERBOSE = args.verbose
 
     if args.list:
         print("Available Scenarios")
         for name, scenario in SCENARIOS.items():
-            flags = " ".join(scenario.security_flags) or "(nonw)"
+            flags = " ".join(scenario.security_flags) or "(none)"
             print(f"{name:30s} attack={scenario.attack_type:8s} flags={flags}")
         return
 

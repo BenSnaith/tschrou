@@ -1,0 +1,15 @@
+[
+  {
+    "scenario": "sybil_subnet_diversity",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--subnet-diversity"
+    ],
+    "keys_stored": 50,
+    "keys_retrieved": 19,
+    "keys_correct": 19,
+    "lookup_success_rate": 0.38,
+    "duration_seconds": 47.474395513534546,
+    "module_metrics": []
+  }
+]

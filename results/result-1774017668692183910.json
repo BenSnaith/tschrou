@@ -1,0 +1,39 @@
+[
+  {
+    "scenario": "sybil_no_defence",
+    "attack_type": "sybil",
+    "security_flags": [],
+    "keys_stored": 50,
+    "keys_retrieved": 19,
+    "keys_correct": 19,
+    "lookup_success_rate": 0.38,
+    "duration_seconds": 52.992252588272095,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_id_verify",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--id-verify"
+    ],
+    "keys_stored": 50,
+    "keys_retrieved": 23,
+    "keys_correct": 23,
+    "lookup_success_rate": 0.46,
+    "duration_seconds": 55.10030674934387,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_lookup_validate",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--lookup-validate"
+    ],
+    "keys_stored": 50,
+    "keys_retrieved": 16,
+    "keys_correct": 16,
+    "lookup_success_rate": 0.32,
+    "duration_seconds": 55.183210134506226,
+    "module_metrics": []
+  }
+]

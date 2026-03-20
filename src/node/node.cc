@@ -145,7 +145,7 @@ void Node::Shutdown() {
   server_->Stop();
 }
 
-std::optional<NodeInfo> Node::FindSuccessor(NodeID node_id) {
+std::optional<NodeInfo> Node::FindSuccessor(NodeID node_id, bool validate) {
   NodeAddress target;
   {
     std::lock_guard lock(ring_mutex_);
@@ -169,7 +169,7 @@ std::optional<NodeInfo> Node::FindSuccessor(NodeID node_id) {
 
   auto result = TcpClient::FindSuccessor(target, node_id);
 
-  if (!security_policy_.ValidateLookup(node_id, *result)) {
+  if (validate && result && !security_policy_.ValidateLookup(node_id, *result)) {
     return std::nullopt;
   }
 
@@ -214,7 +214,7 @@ std::optional<NodeInfo> Node::GetSuccessor() const {
 bool Node::Put(const std::string& key, const std::string& value) {
   KeyID key_id = hsh::Hash::HashKey(key);
 
-  auto successor = FindSuccessor(key_id);
+  auto successor = FindSuccessor(key_id, true);
   if (!successor) {
     return false;
   }
@@ -231,7 +231,7 @@ bool Node::Put(const std::string& key, const std::string& value) {
 std::optional<std::string> Node::Get(const std::string& key) {
   KeyID key_id = hsh::Hash::HashKey(key);
 
-  auto successor = FindSuccessor(key_id);
+  auto successor = FindSuccessor(key_id, true);
   if (!successor) {
     return std::nullopt;
   }

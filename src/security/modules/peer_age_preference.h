@@ -26,7 +26,7 @@ public:
     auto age = std::chrono::duration<double>(now - it->second);
     if (age.count() < min_age_seconds_) {
       ++young_rejections_;
-      return true;
+      return false;
     }
 
     ++mature_accepts_;

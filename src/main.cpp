@@ -143,7 +143,7 @@ void parse_flags(int argc, char* argv[], int start_idx, node::Node::Config& conf
     else if (flag == "--honeypot")         config.enable_honeypot = true;
     else if (flag == "--all-security") {
       config.enable_id_verification = true;
-      config.enable_subnet_diversity = true;
+      //config.enable_subnet_diversity = true;
       config.enable_rate_limiting = true;
       config.enable_lookup_validation = true;
       config.enable_peer_age = true;

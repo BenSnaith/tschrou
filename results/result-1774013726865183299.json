@@ -1,0 +1,26 @@
+[
+  {
+    "scenario": "sybil_no_defence",
+    "attack_type": "sybil",
+    "security_flags": [],
+    "keys_stored": 50,
+    "keys_retrieved": 17,
+    "keys_correct": 17,
+    "lookup_success_rate": 0.34,
+    "duration_seconds": 58.987483501434326,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_all_defence",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--all-security"
+    ],
+    "keys_stored": 0,
+    "keys_retrieved": 0,
+    "keys_correct": 0,
+    "lookup_success_rate": 0.0,
+    "duration_seconds": 0.0,
+    "module_metrics": {}
+  }
+]
