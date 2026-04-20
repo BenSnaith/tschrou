@@ -1,0 +1,15 @@
+[
+  {
+    "scenario": "baseline_all_security",
+    "attack_type": "none",
+    "security_flags": [
+      "--all-security"
+    ],
+    "keys_stored": 50,
+    "keys_retrieved": 30,
+    "keys_correct": 30,
+    "lookup_success_rate": 0.6,
+    "duration_seconds": 50.07973909378052,
+    "module_metrics": []
+  }
+]

@@ -131,7 +131,7 @@ FindSuccessorResponse FindSuccessorResponse::Deserialise(
     std::span<std::byte> data) {
   FindSuccessorResponse response;
   std::byte* ptr = data.data() + 1;
-  response.found_ = ptr++ != nullptr;
+  response.found_ = *ptr++ != std::byte{0};
   if(response.found_) {
     response.successor_ = ReadNodeInfo(ptr);
   }
@@ -199,7 +199,7 @@ NotifyMessage NotifyMessage::Deserialise(std::span<std::byte> data) {
 // -------------------------------------------
 
 std::vector<std::byte> NotifyAck::Serialise() const {
-  return {static_cast<std::byte>(type_)};
+  return {static_cast<std::byte>(type_), accepted_ ? std::byte{1} : std::byte{0}};
 }
 
 NotifyAck NotifyAck::Deserialise(std::span<std::byte> data) {

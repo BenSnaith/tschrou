@@ -43,7 +43,7 @@ public:
       return true;
     }
 
-    ++confirmed_count_;
+    ++conflict_count_;
     std::cerr << "[LookupValidator] Conflict: lookup for " << target
               << " returned node " << result.id_
               << " but alternative nodes disagree\n";
@@ -56,7 +56,7 @@ public:
     .counters = {
       {"total_validations", total_validations_.load()},
       {"confirmed", confirmed_count_.load()},
-      {"conflicts", conflict_count.load()},
+      {"conflicts", conflict_count_.load()},
     },
     .gauges = {}
     };
@@ -65,7 +65,7 @@ public:
   void ResetMetrics() override {
     total_validations_ = 0;
     confirmed_count_ = 0;
-    conflict_count = 0;
+    conflict_count_ = 0;
   }
 
   [[nodiscard]] std::string Name() const override { return "LookupValidator"; }
@@ -75,7 +75,7 @@ private:
   int num_checks_;
   std::atomic<u64> total_validations_{0};
   std::atomic<u64> confirmed_count_{0};
-  std::atomic<u64> conflict_count{0};
+  std::atomic<u64> conflict_count_{0};
 };
 } // namespace tsc::sec::mod
 
