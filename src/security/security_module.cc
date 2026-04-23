@@ -30,7 +30,7 @@ std::string SecurityPolicy::MetricsToJSON() const {
     oss << "}}";
   }
 
-  oss << "}}";
+  oss << "]}";
   return oss.str();
 }
 } // namespace tsc::sec

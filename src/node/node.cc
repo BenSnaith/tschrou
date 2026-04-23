@@ -326,10 +326,10 @@ std::vector<NodeInfo> Node::AlternativeNodes() const {
 
 void Node::DumpMetrics() const{
   if (security_policy_.Empty()) {
-    std::cout << "METRICS:{\"modules\":[]}\n";
+    std::cout << "METRICS:{\"modules\":[]}" << std::endl;
     return;
   }
-  std::cout << "METRICS:" << security_policy_.MetricsToJSON() << "\n";
+  std::cout << "METRICS:" << security_policy_.MetricsToJSON() << std::endl;
 }
 
 void Node::FixFingers() {

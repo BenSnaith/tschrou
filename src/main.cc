@@ -36,6 +36,7 @@ void print_help() {
               << "  state              - Show node state\n"
               << "  fingers            - Show finger table\n"
               << "  hash <string>      - Show hash of a string\n"
+              << "  metrics            - Print security module metrics as JSON\n"
               << "  help               - Show this help\n"
               << "  quit               - Leave the ring and exit\n\n";
 }
@@ -123,6 +124,9 @@ void run_interactive(node::Node& node) {
 
             std::cout << "hash(\"" << str << "\") = " << hsh::Hash::ComputeHash(str) << "\n";
         }
+        else if (cmd == "metrics") {
+          node.DumpMetrics();
+        }
         else {
             std::cout << "Unknown command: " << cmd << "\n";
             std::cout << "Type 'help' for available commands\n";
@@ -163,6 +167,8 @@ void parse_flags(int argc, char* argv[], int start_idx, node::Node::Config& conf
 }
 
 int main(int argc, char* argv[]) {
+    std::setvbuf(stdout, nullptr, _IONBF, 0);
+
     if (argc < 3) {
         print_usage(argv[0]);
         return 1;

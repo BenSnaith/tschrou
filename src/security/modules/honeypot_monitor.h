@@ -23,6 +23,7 @@ public:
     , put_fn_(std::move(put_fn))
     , check_interval_(check_interval_seconds)
   {
+    constructed_at_ = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < num_sentinels; ++i) {
       sentinels_.push_back({
         .key = "__honeypot_" + std::to_string(i),
@@ -42,14 +43,21 @@ public:
     }
     sentinels_placed_ = true;
     last_check_ = std::chrono::high_resolution_clock::now();
-    std::cout << "[Honeypot] Placed << " << placed_count_.load()
+    std::cout << "[Honeypot] Placed " << placed_count_.load()
     << "/" << sentinels_.size() << " Sentinels\n";
   }
 
   void Tick() override {
-    if (!sentinels_placed_) { return; }
-
     auto now = std::chrono::high_resolution_clock::now();
+
+    if (!sentinels_placed_) {
+      auto since_start = std::chrono::duration<double>(now - constructed_at_);
+      if (since_start.count() >= placement_delay_seconds_) {
+        PlaceSentinels();
+      }
+      return;
+    }
+
     auto elapsed = std::chrono::duration<double>(now - last_check_);
     if (elapsed.count() < check_interval_) { return; }
 
@@ -115,6 +123,9 @@ private:
   PutFn put_fn_;
   std::vector<Sentinel> sentinels_;
   double check_interval_;
+
+  std::chrono::high_resolution_clock::time_point constructed_at_;
+  double placement_delay_seconds_{5.0};
 
   bool sentinels_placed_{false};
   std::chrono::high_resolution_clock::time_point last_check_;
