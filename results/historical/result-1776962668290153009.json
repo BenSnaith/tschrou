@@ -1,0 +1,15 @@
+[
+  {
+    "scenario": "dos_rate_limit",
+    "attack_type": "dos",
+    "security_flags": [
+      "--rate-limit"
+    ],
+    "keys_stored": 50,
+    "keys_retrieved": 50,
+    "keys_correct": 50,
+    "lookup_success_rate": 1.0,
+    "duration_seconds": 31.192026615142822,
+    "module_metrics": []
+  }
+]

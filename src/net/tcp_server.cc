@@ -103,7 +103,7 @@ void TcpServer::ServerLoop() {
 
 void TcpServer::HandleClient(int client_socket, const NodeAddress& sender) {
   timeval tv{};
-  tv.tv_sec = 5;
+  tv.tv_sec = 1;
   tv.tv_usec = 0;
   setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
@@ -143,6 +143,13 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
     switch (type) {
       case MessageType::kFindSuccessorRequest: {
         auto req = FindSuccessorRequest::Deserialise(message);
+
+        if (req.sender_) {
+          if (!node_->GetSecurityPolicy().AllowNode(*req.sender_)) {
+            return ErrorResponse("Blocked").Serialise();
+          }
+        }
+
         auto successor = node_->FindSuccessor(req.id_);
 
         FindSuccessorResponse response;
@@ -187,14 +194,13 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
         }
 
         auto req = GetRequest::Deserialise(message);
-        auto value = node_->LocalGet(req.key_);
+        auto value = node_->Get(req.key_);   // routed — calls ValidateLookup
 
         GetResponse response;
-        if(value) {
+        if (value) {
           response.found_ = true;
           response.value_ = *value;
-        }
-        else {
+        } else {
           response.found_ = false;
         }
         return response.Serialise();
@@ -207,10 +213,10 @@ std::vector<std::byte> TcpServer::ProcessMessage(std::span<std::byte> message) {
         }
 
         auto req = PutRequest::Deserialise(message);
-        node_->LocalPut(req.key_, req.value_);
+        bool ok = node_->Put(req.key_, req.value_);  // routed — calls ValidateLookup
 
         PutResponse response;
-        response.success_ = true;
+        response.success_ = ok;
         return response.Serialise();
       }
       case MessageType::kTransferKeysRequest: {

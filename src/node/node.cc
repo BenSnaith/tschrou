@@ -10,6 +10,7 @@
 #include "security/modules/rate_limiter.h"
 
 #include <iostream>
+#include <random>
 
 namespace tsc::node {
 using namespace tsc::tcp;
@@ -18,7 +19,12 @@ using namespace tsc::sec;
 
 Node::Node(const Config& config)
     : config_(config), address_{.ip_ = config.ip_, .port_ = config.port_} {
-  id_ = Hash::HashNode(address_);
+  if (config_.spoof_id) {
+    std::mt19937 rng(std::random_device{}());
+    id_ = static_cast<NodeID>(rng());
+  } else {
+    id_ = Hash::HashNode(address_);
+  }
   finger_table_ = std::make_unique<FingerTable>(id_);
   server_ = std::make_unique<TcpServer>(config_.port_, this);
 }
@@ -116,7 +122,7 @@ bool Node::Join(const NodeAddress& known_node) {
   fix_fingers_thread_ = std::jthread(&Node::FixFingersLoop, this);
   check_predecessor_thread_ = std::jthread(&Node::CheckPredecessorLoop, this);
 
-  std::cout << "Joined Ring: " << successor_->address_.ToString() << "\n";
+  std::cerr << "Joined Ring: " << successor_->address_.ToString() << "\n";
   return true;
 }
 
@@ -196,7 +202,10 @@ void Node::Notify(const NodeInfo& node) {
   std::lock_guard lock(ring_mutex_);
 
   if (!predecessor_ || InRangeExclusive(node.id_, predecessor_->id_, id_)) {
-    std::cout << "Update predecessor to " << node.id_ << " at " << node.address_.ToString() << "\n";
+    if (predecessor_ && security_policy_.PreferOver(*predecessor_, node)) {
+      return;
+    }
+    std::cerr << "Update predecessor to " << node.id_ << " at " << node.address_.ToString() << "\n";
     predecessor_ = node;
   }
 }
@@ -213,36 +222,36 @@ std::optional<NodeInfo> Node::GetSuccessor() const {
 
 bool Node::Put(const std::string& key, const std::string& value) {
   KeyID key_id = hsh::Hash::HashKey(key);
-
-  auto successor = FindSuccessor(key_id, true);
-  if (!successor) {
-    return false;
+  {
+    std::lock_guard lock(ring_mutex_);
+    if (!predecessor_ ||
+        InRangeExclusiveInclusive(key_id, predecessor_->id_, id_)) {
+      LocalPut(key, value);
+      return true;
+    }
   }
-
-  // we are the responsible node for this key, store locally
-  if (successor->id_ == id_) {
-    LocalPut(key, value);
-    return true;
-  }
-
+  auto successor = FindSuccessor(key_id, true);   // true = call ValidateLookup
+  if (!successor) return false;
+  if (successor->id_ == id_) { LocalPut(key, value); return true; }
   return TcpClient::Put(successor->address_, key, value);
 }
 
+
 std::optional<std::string> Node::Get(const std::string& key) {
   KeyID key_id = hsh::Hash::HashKey(key);
-
-  auto successor = FindSuccessor(key_id, true);
-  if (!successor) {
-    return std::nullopt;
+  {
+    std::lock_guard lock(ring_mutex_);
+    if (!predecessor_ ||
+        InRangeExclusiveInclusive(key_id, predecessor_->id_, id_)) {
+      return LocalGet(key);
+    }
   }
-
-  // we are the responsible node for this key, store locally
-  if (successor->id_ == id_) {
-    return LocalGet(key);
-  }
-
+  auto successor = FindSuccessor(key_id, true);   // true = call ValidateLookup
+  if (!successor) return std::nullopt;
+  if (successor->id_ == id_) return LocalGet(key);  // single-node fallback
   return TcpClient::Get(successor->address_, key);
 }
+
 
 bool Node::Remove(const std::string& key) {
   return storage_.Remove(key);
@@ -282,7 +291,7 @@ void Node::Stabilise() {
       std::lock_guard lock(ring_mutex_);
 
       if (InRangeExclusive(predecessor->id_, id_, successor_->id_)) {
-        std::cout << "Stabilise: updating successor from " << successor_->id_
+        std::cerr << "Stabilise: updating successor from " << successor_->id_
           << " to " << predecessor->id_ << "\n";
         successor_ = predecessor;
         finger_table_->Set(0, *predecessor);
@@ -349,7 +358,7 @@ void Node::CheckPredecessor() {
 
   if (predecessor_) {
     if (!IsAlive(predecessor_->address_)) {
-      std::cout << "Predecessor " << predecessor_->id_ << " has failed" << "\n";
+      std::cerr << "Predecessor " << predecessor_->id_ << " has failed" << "\n";
       predecessor_ = std::nullopt;
     }
   }
@@ -398,28 +407,28 @@ void Node::CheckPredecessorLoop() {
 void Node::PrintState() const {
   std::lock_guard lock(ring_mutex_);
 
-  std::cout << "\n" << " === Node State === " << "\n";
-  std::cout << "ID: " << id_ << "\n";
-  std::cout << "Address: " << address_.ToString() << "\n";
+  std::cerr << "\n" << " === Node State === " << "\n";
+  std::cerr << "ID: " << id_ << "\n";
+  std::cerr << "Address: " << address_.ToString() << "\n";
 
   if (predecessor_) {
-    std::cout << "Predecessor: " << predecessor_->id_
+    std::cerr << "Predecessor: " << predecessor_->id_
       << " at " << predecessor_->address_.ToString() << "\n";
   }
   else {
-    std::cout << "Predecessor: (none)" << "\n";
+    std::cerr << "Predecessor: (none)" << "\n";
   }
 
   if (successor_) {
-    std::cout << "Successor: " << successor_->id_
+    std::cerr << "Successor: " << successor_->id_
       << " at " << successor_->address_.ToString() << "\n";
   }
   else {
-    std::cout << "Successor: (none)" << "\n";
+    std::cerr << "Successor: (none)" << "\n";
   }
 
-  std::cout << "Stored Keys: " << storage_.Size() << "\n";
-  std::cout << "==================================" << "\n" << "\n";
+  std::cerr << "Stored Keys: " << storage_.Size() << "\n";
+  std::cerr << "==================================" << "\n" << "\n";
 }
 
 void Node::PrintFingerTable() const {

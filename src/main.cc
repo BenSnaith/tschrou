@@ -13,7 +13,7 @@ using namespace tsc;
 node::Node* g_node = nullptr;
 
 void signal_handler(int signal) {
-    std::cout << "\nReceived signal " << signal << ", shutting down...\n";
+    std::cerr << "\nReceived signal " << signal << ", shutting down...\n";
     if (g_node) {
         g_node->Shutdown();
     }
@@ -46,8 +46,8 @@ void run_interactive(node::Node& node) {
 
     std::string line;
     while (true) {
-        std::cout << "chord> ";
-        std::cout.flush();
+        std::cerr << "chord> ";
+        std::cerr.flush();
 
         if (!std::getline(std::cin, line)) {
             break;
@@ -62,7 +62,7 @@ void run_interactive(node::Node& node) {
         }
 
         if (cmd == "quit" || cmd == "exit") {
-            std::cout << "Leaving ring...\n";
+            std::cerr << "Leaving ring...\n";
             node.Leave();
             break;
         }
@@ -145,11 +145,10 @@ void parse_flags(int argc, char* argv[], int start_idx, node::Node::Config& conf
     else if (flag == "--lookup-validate")  config.enable_lookup_validation = true;
     else if (flag == "--peer-age")         config.enable_peer_age = true;
     else if (flag == "--honeypot")         config.enable_honeypot = true;
+    else if (flag == "--spoof-id")        config.spoof_id = true;
     else if (flag == "--all-security") {
       config.enable_id_verification = true;
       config.enable_subnet_diversity = true;
-      config.enable_rate_limiting = true;
-      config.enable_lookup_validation = true;
       config.enable_peer_age = true;
       config.enable_honeypot = true;
     }
@@ -167,7 +166,7 @@ void parse_flags(int argc, char* argv[], int start_idx, node::Node::Config& conf
 }
 
 int main(int argc, char* argv[]) {
-    std::setvbuf(stdout, nullptr, _IONBF, 0);
+    std::setvbuf(stdout, nullptr, _IOLBF, 0);
 
     if (argc < 3) {
         print_usage(argv[0]);
@@ -185,7 +184,7 @@ int main(int argc, char* argv[]) {
     parse_flags(argc, argv, flags_start, config);
 
     if (config.is_malicious) {
-      std::cout << "[MALICIOUS] Node running in malicious mode at "
+      std::cerr << "[MALICIOUS] Node running in malicious mode at "
                 << config.ip_ << ":" << config.port_ << "\n";
     }
 

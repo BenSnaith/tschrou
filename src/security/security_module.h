@@ -24,18 +24,20 @@ class ISecurityModule {
 public:
   virtual ~ISecurityModule() = default;
 
-  virtual bool AllowNode(const NodeInfo& node) {
-    std::print("calling ISecurityModule::AllowNode, it should be virtual");
+  virtual bool AllowNode(const NodeInfo& /*node*/) {
     return true;
   }
 
-  virtual bool AllowMessage(const NodeAddress& sender, MessageType type) {
-    std::print("calling ISecurityModule::AllowMessage, it should be virtual");
+  virtual bool AllowMessage(const NodeAddress& /*sender*/, MessageType /*type*/) {
     return true;
   }
 
-  virtual bool ValidateLookup(NodeID target, const NodeInfo& result) {
-    std::print("calling ISecurityModule::ValidateLookup, it should be virtual");
+  virtual bool PreferOver(const NodeInfo& /*incumbent*/,
+                          const NodeInfo& /*candidate*/) {
+    return false;
+  }
+
+  virtual bool ValidateLookup(NodeID /*target*/, const NodeInfo& /*result*/) {
     return true;
   }
 
@@ -73,6 +75,15 @@ public:
       }
     }
     return true;
+  }
+
+  bool PreferOver(const NodeInfo& incumbent, const NodeInfo& candidate) {
+    for (const auto& m : modules_) {
+      if (m->PreferOver(incumbent, candidate)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   bool ValidateLookup(NodeID target, const NodeInfo& result) const {

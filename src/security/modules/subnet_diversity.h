@@ -14,7 +14,6 @@ public:
 
   bool AllowNode(const NodeInfo& node) override {
     std::string subnet = ExtractSubnet(node.address_.ip_);
-
     std::lock_guard lock(mutex_);
     auto& ids = subnet_counts_[subnet];
 
@@ -24,9 +23,10 @@ public:
 
     if (static_cast<int>(ids.size()) >= max_per_subnet_) {
       ++rejected_count_;
-      std::cerr << "[SubnetDiversity] Rejected node" << node.id_
+      over_limit_ids_.insert(node.id_);
+      std::cerr << "[SubnetDiversity] Rejected node " << node.id_
                 << " from subnet " << subnet
-                << "(count " << ids.size() << " >= max " << max_per_subnet_
+                << " (count " << ids.size() << " >= max " << max_per_subnet_
                 << ")\n";
       return false;
     }
@@ -34,6 +34,13 @@ public:
     ids.insert(node.id_);
     ++accepted_count_;
     return true;
+  }
+
+  bool PreferOver(const NodeInfo& incumbent,
+                  const NodeInfo& candidate) override {
+    std::lock_guard lock(mutex_);
+    return over_limit_ids_.contains(candidate.id_)
+           && !over_limit_ids_.contains(incumbent.id_);
   }
 
   void Tick() override {
@@ -76,6 +83,7 @@ public:
     accepted_count_ = 0;
     rejected_count_ = 0;
     subnet_counts_.clear();
+    over_limit_ids_.clear();
   }
 
   std::string Name() const override { return "SubnetDiversity"; }
@@ -89,6 +97,7 @@ private:
 
   int max_per_subnet_{};
   std::unordered_map<std::string, std::unordered_set<NodeID>> subnet_counts_;
+  std::unordered_set<NodeID> over_limit_ids_;
   mutable std::mutex mutex_;
   std::atomic<u64> accepted_count_{0};
   std::atomic<u64> rejected_count_{0};

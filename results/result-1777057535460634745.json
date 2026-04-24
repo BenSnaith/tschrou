@@ -1,0 +1,130 @@
+[
+  {
+    "scenario": "dos_rate_limit",
+    "attack_type": "dos",
+    "security_flags": [
+      "--rate-limit"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 30,
+    "keys_correct": 30,
+    "lookup_success_rate": 0.059333333333333335,
+    "lookup_success_rate_std": 0.015534906930308054,
+    "duration_seconds": 56.79845380783081,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 2426.3,
+                "throttled": 23292.3
+              },
+              "gauges": {
+                "tracked_ips": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 445.7,
+                "throttled": 0
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 1744.3,
+                "throttled": 209
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 515.3,
+                "throttled": 0
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 169.3,
+                "throttled": 0
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 21,
+        "keys_correct": 21,
+        "lookup_success_rate": 0.042,
+        "duration_seconds": 53.618691205978394
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 36,
+        "keys_correct": 36,
+        "lookup_success_rate": 0.072,
+        "duration_seconds": 65.3574788570404
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 32,
+        "keys_correct": 32,
+        "lookup_success_rate": 0.064,
+        "duration_seconds": 51.41919136047363
+      }
+    ]
+  }
+]

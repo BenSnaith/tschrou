@@ -3,6 +3,7 @@
 
 #include <span>
 #include <vector>
+#include <optional>
 
 #include "types/types.h"
 
@@ -42,7 +43,9 @@ struct Message {
 
 struct FindSuccessorRequest : Message {
   FindSuccessorRequest() { type_ = MessageType::kFindSuccessorRequest; }
-  explicit FindSuccessorRequest(NodeID id) : id_(id) {
+  explicit FindSuccessorRequest(NodeID id, std::optional<NodeInfo> sender = std::nullopt)
+    : id_(id)
+    , sender_(std::move(sender)) {
     type_ = MessageType::kFindSuccessorRequest;
   }
 
@@ -50,6 +53,7 @@ struct FindSuccessorRequest : Message {
   static FindSuccessorRequest Deserialise(std::span<std::byte> data);
 
   NodeID id_;
+  std::optional<NodeInfo> sender_;
 };
 
 struct FindSuccessorResponse : Message {

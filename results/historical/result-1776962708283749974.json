@@ -1,0 +1,13 @@
+[
+  {
+    "scenario": "dos_no_defence",
+    "attack_type": "dos",
+    "security_flags": [],
+    "keys_stored": 50,
+    "keys_retrieved": 50,
+    "keys_correct": 50,
+    "lookup_success_rate": 1.0,
+    "duration_seconds": 31.190171480178833,
+    "module_metrics": []
+  }
+]

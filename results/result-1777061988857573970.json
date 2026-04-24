@@ -1,0 +1,1633 @@
+[
+  {
+    "scenario": "baseline_no_security",
+    "attack_type": "none",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 500,
+    "keys_correct": 500,
+    "lookup_success_rate": 1.0,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 56.65069532394409,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": []
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 56.64236569404602
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 56.665363073349
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 56.644357204437256
+      }
+    ]
+  },
+  {
+    "scenario": "baseline_all_security",
+    "attack_type": "none",
+    "security_flags": [
+      "--all-security"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 500,
+    "keys_correct": 500,
+    "lookup_success_rate": 1.0,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 57.286742528279625,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 917,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 5,
+                "rejected": 0
+              },
+              "gauges": {
+                "unique_subnets": 1
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 2,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 2
+              }
+            },
+            {
+              "name": "HoneypotMonitor",
+              "counters": {
+                "placed": 10,
+                "checks": 30,
+                "successes": 30,
+                "failures": 0,
+                "tampered": 0
+              },
+              "gauges": {
+                "integrity_ratio": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 170,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 5,
+                "rejected": 0
+              },
+              "gauges": {
+                "unique_subnets": 1
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 2,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 2
+              }
+            },
+            {
+              "name": "HoneypotMonitor",
+              "counters": {
+                "placed": 10,
+                "checks": 30,
+                "successes": 30,
+                "failures": 0,
+                "tampered": 0
+              },
+              "gauges": {
+                "integrity_ratio": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 260,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 5,
+                "rejected": 0
+              },
+              "gauges": {
+                "unique_subnets": 1
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            },
+            {
+              "name": "HoneypotMonitor",
+              "counters": {
+                "placed": 10,
+                "checks": 30,
+                "successes": 30,
+                "failures": 0,
+                "tampered": 0
+              },
+              "gauges": {
+                "integrity_ratio": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 167,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 3,
+                "rejected": 0
+              },
+              "gauges": {
+                "unique_subnets": 1
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            },
+            {
+              "name": "HoneypotMonitor",
+              "counters": {
+                "placed": 10,
+                "checks": 30,
+                "successes": 30,
+                "failures": 0,
+                "tampered": 0
+              },
+              "gauges": {
+                "integrity_ratio": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 270,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 0
+              },
+              "gauges": {
+                "unique_subnets": 1
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            },
+            {
+              "name": "HoneypotMonitor",
+              "counters": {
+                "placed": 10,
+                "checks": 30,
+                "successes": 30,
+                "failures": 0,
+                "tampered": 0
+              },
+              "gauges": {
+                "integrity_ratio": 1
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 54.67662000656128
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 58.58606004714966
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 58.59754753112793
+      }
+    ]
+  },
+  {
+    "scenario": "sybil_spoof_no_defence",
+    "attack_type": "sybil",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 158,
+    "keys_correct": 158,
+    "lookup_success_rate": 0.31666666666666665,
+    "lookup_success_rate_std": 0.12274091955551472,
+    "duration_seconds": 81.23814694086711,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": []
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 201,
+        "keys_correct": 201,
+        "lookup_success_rate": 0.402,
+        "duration_seconds": 74.43185067176819
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 88,
+        "keys_correct": 88,
+        "lookup_success_rate": 0.176,
+        "duration_seconds": 88.63138127326965
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 186,
+        "keys_correct": 186,
+        "lookup_success_rate": 0.372,
+        "duration_seconds": 80.65120887756348
+      }
+    ]
+  },
+  {
+    "scenario": "sybil_spoof_id_verify",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--id-verify"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 500,
+    "keys_correct": 500,
+    "lookup_success_rate": 1.0,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 78.67545851071675,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 927,
+                "rejected": 29.3,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 192,
+                "rejected": 4,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 259,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 197,
+                "rejected": 80.3,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 268,
+                "rejected": 5,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 74.67385745048523
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 80.65620279312134
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 80.6963152885437
+      }
+    ]
+  },
+  {
+    "scenario": "sybil_lookup_validate",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--lookup-validate"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 79.93018023173015,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "LookupValidator",
+              "counters": {
+                "total_validations": 741,
+                "confirmed": 741,
+                "conflicts": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "LookupValidator",
+              "counters": {
+                "total_validations": 0,
+                "confirmed": 0,
+                "conflicts": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "LookupValidator",
+              "counters": {
+                "total_validations": 0,
+                "confirmed": 0,
+                "conflicts": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "LookupValidator",
+              "counters": {
+                "total_validations": 0,
+                "confirmed": 0,
+                "conflicts": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "LookupValidator",
+              "counters": {
+                "total_validations": 0,
+                "confirmed": 0,
+                "conflicts": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 82.61078405380249
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 82.01520156860352
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 75.16455507278442
+      }
+    ]
+  },
+  {
+    "scenario": "sybil_subnet_diversity",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--subnet-diversity",
+      "--subnet-max",
+      "2"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 180,
+    "keys_correct": 180,
+    "lookup_success_rate": 0.36,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 216.73632756868997,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 146
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 176
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 68
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 5
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 15
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 180,
+        "keys_correct": 180,
+        "lookup_success_rate": 0.36,
+        "duration_seconds": 216.67131114006042
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 180,
+        "keys_correct": 180,
+        "lookup_success_rate": 0.36,
+        "duration_seconds": 216.74155616760254
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 180,
+        "keys_correct": 180,
+        "lookup_success_rate": 0.36,
+        "duration_seconds": 216.79611539840698
+      }
+    ]
+  },
+  {
+    "scenario": "sybil_all_defence",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--id-verify",
+      "--subnet-diversity",
+      "--subnet-max",
+      "2",
+      "--peer-age",
+      "--age-min",
+      "3"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 180,
+    "keys_correct": 180,
+    "lookup_success_rate": 0.36,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 215.10806361834207,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 810.7,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 146
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 3,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 735,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 176
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 500,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 68
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 397,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 5
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 408,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 15
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 180,
+        "keys_correct": 180,
+        "lookup_success_rate": 0.36,
+        "duration_seconds": 217.81087470054626
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 180,
+        "keys_correct": 180,
+        "lookup_success_rate": 0.36,
+        "duration_seconds": 209.82205653190613
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 180,
+        "keys_correct": 180,
+        "lookup_success_rate": 0.36,
+        "duration_seconds": 217.69125962257385
+      }
+    ]
+  },
+  {
+    "scenario": "eclipse_no_defence",
+    "attack_type": "eclipse",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 73.03118562698364,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": []
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 67.71289706230164
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 83.67038297653198
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 67.71027684211731
+      }
+    ]
+  },
+  {
+    "scenario": "eclipse_peer_age",
+    "attack_type": "eclipse",
+    "security_flags": [
+      "--peer-age",
+      "--age-min",
+      "5"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 70.36641089121501,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 3,
+                "young_rejections": 5,
+                "mature_accepts": 1
+              },
+              "gauges": {
+                "tracked_nodes": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 2,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 2,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 3,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 67.7240252494812
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 75.65985703468323
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 67.71535038948059
+      }
+    ]
+  },
+  {
+    "scenario": "eclipse_all_defence",
+    "attack_type": "eclipse",
+    "security_flags": [
+      "--id-verify",
+      "--peer-age",
+      "--age-min",
+      "3"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 72.92147636413574,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 999.7,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 3,
+                "young_rejections": 3,
+                "mature_accepts": 1
+              },
+              "gauges": {
+                "tracked_nodes": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 353.7,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 2,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 213.7,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 2,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 216.7,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 3,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 214.7,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            },
+            {
+              "name": "PeerAgePreference",
+              "counters": {
+                "new_nodes_seen": 0,
+                "young_rejections": 0,
+                "mature_accepts": 0
+              },
+              "gauges": {
+                "tracked_nodes": 0
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 67.48306369781494
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 83.55968880653381
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 177,
+        "keys_correct": 177,
+        "lookup_success_rate": 0.354,
+        "duration_seconds": 67.72167658805847
+      }
+    ]
+  },
+  {
+    "scenario": "dos_no_defence",
+    "attack_type": "dos",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 493,
+    "keys_correct": 493,
+    "lookup_success_rate": 0.9853333333333333,
+    "lookup_success_rate_std": 0.009865765724632504,
+    "duration_seconds": 63.6198840936025,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": []
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": []
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 495,
+        "keys_correct": 495,
+        "lookup_success_rate": 0.99,
+        "duration_seconds": 59.340327501297
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 487,
+        "keys_correct": 487,
+        "lookup_success_rate": 0.974,
+        "duration_seconds": 71.28185629844666
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 496,
+        "keys_correct": 496,
+        "lookup_success_rate": 0.992,
+        "duration_seconds": 60.23746848106384
+      }
+    ]
+  },
+  {
+    "scenario": "dos_rate_limit",
+    "attack_type": "dos",
+    "security_flags": [
+      "--rate-limit"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 49,
+    "keys_correct": 49,
+    "lookup_success_rate": 0.098,
+    "lookup_success_rate_std": 0.007211102550927977,
+    "duration_seconds": 56.68432148297628,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 2365,
+                "throttled": 22285
+              },
+              "gauges": {
+                "tracked_ips": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 389,
+                "throttled": 0
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 1816.3,
+                "throttled": 239.3
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 344.3,
+                "throttled": 0
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "RateLimiter",
+              "counters": {
+                "allowed": 154,
+                "throttled": 0
+              },
+              "gauges": {
+                "tracked_ips": 1
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 53,
+        "keys_correct": 53,
+        "lookup_success_rate": 0.106,
+        "duration_seconds": 52.217124938964844
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 46,
+        "keys_correct": 46,
+        "lookup_success_rate": 0.092,
+        "duration_seconds": 55.64169192314148
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 48,
+        "keys_correct": 48,
+        "lookup_success_rate": 0.096,
+        "duration_seconds": 62.19414758682251
+      }
+    ]
+  }
+]

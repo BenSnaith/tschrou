@@ -1,0 +1,125 @@
+[
+  {
+    "scenario": "sybil_spoof_id_verify",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--id-verify"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 500,
+    "keys_correct": 500,
+    "lookup_success_rate": 1.0,
+    "lookup_success_rate_std": 0.0,
+    "duration_seconds": 80.70839595794678,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 928,
+                "rejected": 30.3,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 192,
+                "rejected": 7.7,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 259,
+                "rejected": 0,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 198,
+                "rejected": 69.7,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "id_verification",
+              "counters": {
+                "accepted": 267.7,
+                "rejected": 9.7,
+                "lookup_rejections": 0
+              },
+              "gauges": {}
+            }
+          ]
+        }
+      }
+    ],
+    "runs": [
+      {
+        "run": 1,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 80.70157504081726
+      },
+      {
+        "run": 2,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 80.70703291893005
+      },
+      {
+        "run": 3,
+        "keys_retrieved": 500,
+        "keys_correct": 500,
+        "lookup_success_rate": 1.0,
+        "duration_seconds": 80.71657991409302
+      }
+    ]
+  }
+]

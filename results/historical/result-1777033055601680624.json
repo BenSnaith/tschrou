@@ -1,0 +1,163 @@
+[
+  {
+    "scenario": "baseline_no_security",
+    "attack_type": "none",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 500,
+    "keys_correct": 500,
+    "lookup_success_rate": 1.0,
+    "duration_seconds": 51.7113881111145,
+    "module_metrics": []
+  },
+  {
+    "scenario": "baseline_all_security",
+    "attack_type": "none",
+    "security_flags": [
+      "--all-security"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 500,
+    "keys_correct": 500,
+    "lookup_success_rate": 1.0,
+    "duration_seconds": 58.66188359260559,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_no_defence",
+    "attack_type": "sybil",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "duration_seconds": 81.85198473930359,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_id_verify",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--id-verify"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "duration_seconds": 84.85549211502075,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_lookup_validate",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--lookup-validate"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "duration_seconds": 82.59070801734924,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_subnet_diversity",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--subnet-diversity",
+      "--subnet-max",
+      "2"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 210,
+    "keys_correct": 210,
+    "lookup_success_rate": 0.42,
+    "duration_seconds": 82.30433630943298,
+    "module_metrics": []
+  },
+  {
+    "scenario": "sybil_all_defence",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--id-verify",
+      "--subnet-diversity",
+      "--subnet-max",
+      "2",
+      "--peer-age",
+      "--age-min",
+      "3"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 210,
+    "keys_correct": 210,
+    "lookup_success_rate": 0.42,
+    "duration_seconds": 82.12330555915833,
+    "module_metrics": []
+  },
+  {
+    "scenario": "eclipse_no_defence",
+    "attack_type": "eclipse",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "duration_seconds": 79.92263174057007,
+    "module_metrics": []
+  },
+  {
+    "scenario": "eclipse_peer_age",
+    "attack_type": "eclipse",
+    "security_flags": [
+      "--peer-age",
+      "--age-min",
+      "5"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 176,
+    "keys_correct": 176,
+    "lookup_success_rate": 0.352,
+    "duration_seconds": 85.51359987258911,
+    "module_metrics": []
+  },
+  {
+    "scenario": "eclipse_all_defence",
+    "attack_type": "eclipse",
+    "security_flags": [
+      "--id-verify",
+      "--peer-age",
+      "--age-min",
+      "3"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 177,
+    "keys_correct": 177,
+    "lookup_success_rate": 0.354,
+    "duration_seconds": 80.00785255432129,
+    "module_metrics": []
+  },
+  {
+    "scenario": "dos_no_defence",
+    "attack_type": "dos",
+    "security_flags": [],
+    "keys_stored": 500,
+    "keys_retrieved": 489,
+    "keys_correct": 489,
+    "lookup_success_rate": 0.978,
+    "duration_seconds": 64.69489622116089,
+    "module_metrics": []
+  },
+  {
+    "scenario": "dos_rate_limit",
+    "attack_type": "dos",
+    "security_flags": [
+      "--rate-limit"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 1,
+    "keys_correct": 1,
+    "lookup_success_rate": 0.002,
+    "duration_seconds": 58.264163970947266,
+    "module_metrics": []
+  }
+]

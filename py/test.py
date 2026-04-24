@@ -84,54 +84,37 @@ class ChordClient:
 
     @staticmethod
     def put(host: str, port: int, key: str, value: str) -> bool:
-        key_id = ChordClient.hash_key(key)
-        target = ChordClient.find_successor(host, port, key_id)
-
-        if target is None:
-            return False
-
-        _, target_ip, target_port = target
         payload = (bytes([ChordClient.PUT_REQ])
                    + ChordClient._encode_string(key)
                    + ChordClient._encode_string(value))
-        resp = ChordClient._send_recv(target_ip, target_port, payload)
-
+        resp = ChordClient._send_recv(host, port, payload)
         if resp is None or len(resp) < 2:
             return False
         return resp[0] == ChordClient.PUT_RESP and resp[1] != 0
 
     @staticmethod
     def get(host: str, port: int, key: str) -> Optional[str]:
-        key_id = ChordClient.hash_key(key)
-        target = ChordClient.find_successor(host, port, key_id)
-
-        if target is None:
-            return None
-
-        _, target_ip, target_port = target
         payload = (bytes([ChordClient.GET_REQ])
                    + ChordClient._encode_string(key))
-        resp = ChordClient._send_recv(target_ip, target_port, payload)
-
+        resp = ChordClient._send_recv(host, port, payload)
         if resp is None or len(resp) < 2:
             return None
         if resp[0] != ChordClient.GET_RESP:
             return None
-
         found = resp[1]
         if not found:
             return None
-
         value, _ = ChordClient._decode_string(resp, 2)
         return value
 
-DEFAULT_PORT = 10000
+DEFAULT_PORT = 11000
 STABILISE_WAIT = 6             # seconds to wait for ring to stabilise
 ATTACK_DURATION = 10           # seconds to run after the attack
 METRICS_DELAY = 2              # seconds to wait after attack before collecting metrics
 NUM_LEGIT_NODES = 5
 NUM_MALICIOUS_NODES = 10       # for eclipse/sybil attacks
-NUM_TEST_KEYS = 50             # key-value pairs for integrity testing
+NUM_TEST_KEYS = 500            # key-value pairs for integrity testing
+NUM_RUNS = 3                   # num of runs to average out scenarios
 VERBOSE = False
 
 @dataclass
@@ -143,8 +126,10 @@ class ScenarioResult:
     keys_retrieved: int = 0
     keys_correct: int = 0
     lookup_success_rate: float = 0.0
+    lookup_success_rate_std: float = 0.0
     module_metrics: dict = field(default_factory=dict)
     duration_seconds: float = 0.0
+    runs: list = field(default_factory=list)
 
 @dataclass
 class Scenario:
@@ -153,6 +138,9 @@ class Scenario:
     attack_type: str
     num_sybil: int = 0
     description: str = ""
+    pre_store_attack: bool = False
+    sybil_flags: list[str] = field(default_factory=list)
+
 
 SCENARIOS = {
     # baseline
@@ -169,19 +157,21 @@ SCENARIOS = {
         description="Normal ring, all security modules enabled",
     ),
     # sybil attacks
-    "sybil_no_defence": Scenario(
-        name="sybil_no_defence",
+    "sybil_spoof_no_defence": Scenario(
+        name="sybil_spoof_no_defence",
         security_flags=[],
         attack_type="sybil",
         num_sybil=NUM_MALICIOUS_NODES,
-        description="Sybil attack with no defence",
+        sybil_flags=["--spoof-id"],
+        description="Sybil attack with spoofed IDs, no defence",
     ),
-    "sybil_id_verify": Scenario(
-        name="sybil_id_verify",
+    "sybil_spoof_id_verify": Scenario(
+        name="sybil_spoof_id_verify",
         security_flags=["--id-verify"],
         attack_type="sybil",
         num_sybil=NUM_MALICIOUS_NODES,
-        description="Sybil attack with id verification",
+        sybil_flags=["--spoof-id"],
+        description="Sybil attack with spoofed IDs, IDVerification enabled",
     ),
     "sybil_lookup_validate": Scenario(
         name="sybil_lookup_validate",
@@ -192,19 +182,18 @@ SCENARIOS = {
     ),
     "sybil_subnet_diversity": Scenario(
         name="sybil_subnet_diversity",
-        security_flags=["--subnet-diversity"],
+        security_flags=["--subnet-diversity", "--subnet-max", "2"],
         attack_type="sybil",
         num_sybil=NUM_MALICIOUS_NODES,
-        description="Sybil attack with subnet diversity",
+        description="Sybil attack with subnet diversity (max 2 per /24)",
     ),
     "sybil_all_defence": Scenario(
         name="sybil_all_defence",
-        security_flags=["--id-verify", "--rate-limit",
-                        "--peer-age", "--age-min", "3",
-                        "--rl-tokens", "100", "--rl-refill", "50"],
+        security_flags=["--id-verify", "--subnet-diversity", "--subnet-max", "2",
+                        "--peer-age", "--age-min", "3"],
         attack_type="sybil",
         num_sybil=NUM_MALICIOUS_NODES,
-        description="Sybil attack with all defences",
+        description="Sybil attack with combined defences (id_verify + subnet + peer_age)",
     ),
     # eclipse attacks
     "eclipse_no_defence": Scenario(
@@ -212,6 +201,7 @@ SCENARIOS = {
         security_flags=[],
         attack_type="eclipse",
         num_sybil=NUM_MALICIOUS_NODES,
+        pre_store_attack=True,
         description="Eclipse attack targeting one node, no defences",
     ),
     "eclipse_peer_age": Scenario(
@@ -219,29 +209,31 @@ SCENARIOS = {
         security_flags=["--peer-age", "--age-min", "5"],
         attack_type="eclipse",
         num_sybil=NUM_MALICIOUS_NODES,
+        pre_store_attack=True,
         description="Eclipse attack with peer age preference",
     ),
     "eclipse_all_defence": Scenario(
         name="eclipse_all_defence",
-        security_flags=["--id-verify", "--rate-limit",
-                        "--peer-age", "--age-min", "3",
-                        "--rl-tokens", "100", "--rl-refill", "50"],
+        security_flags=["--id-verify", "--peer-age", "--age-min", "3"],
         attack_type="eclipse",
         num_sybil=NUM_MALICIOUS_NODES,
-        description="Eclipse attack with all defences",
+        pre_store_attack=True,
+        description="Eclipse attack with combined defences (id_verify + peer_age)",
     ),
     # dos attacks
     "dos_no_defence": Scenario(
         name="dos_no_defence",
         security_flags=[],
         attack_type="dos",
-        description="DoS flood with no defences",
+        pre_store_attack=True,
+        description="DoS flood during store and retrieve, no defences",
     ),
     "dos_rate_limit": Scenario(
         name="dos_rate_limit",
         security_flags=["--rate-limit"],
         attack_type="dos",
-        description="DoS flood attack with rate limiting",
+        pre_store_attack=True,
+        description="DoS flood during store and retrieve, with rate limiting",
     ),
 }
 
@@ -273,7 +265,7 @@ class NodeProcess:
                 cmd,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                stderr=None if VERBOSE else subprocess.PIPE,
+                stderr=None if VERBOSE else subprocess.DEVNULL,
                 text=True,
             )
             # wait to bind
@@ -307,21 +299,12 @@ class NodeProcess:
         try:
             self.process.stdin.write("metrics\n")
             self.process.stdin.flush()
-            time.sleep(0.5)
+            time.sleep(1.0)
 
-
-            import select
-            output_lines = []
-            while select.select([self.process.stdout], [], [], 0.5)[0]:
-                line = self.process.stdout.readline()
-                if not line:
-                    break
-                output_lines.append(line.strip())
-
-            for line in output_lines:
-                if line.startswith("METRICS:"):
-                    json_str = line[len("METRICS:"):]
-                    return json.loads(json_str)
+            raw = self.process.stdout.buffer.read1(65536).decode("utf-8", errors="replace")
+            for line in raw.splitlines():
+                if line.strip().startswith("METRICS:"):
+                    return json.loads(line.strip()[len("METRICS:"):])
         except Exception as e:
             print(f"[WARN] Failed to get metrics from port {self.port}: {e}")
         return {}
@@ -463,45 +446,61 @@ class TestRing:
         for node in self.nodes:
             node.stop()
         self.nodes.clear()
+        if hasattr(self, '_flood_stop'):
+            self._flood_stop.set()
+            for t in self._flood_threads:
+                t.join(timeout=2)
         time.sleep(1)
 
 def attack_none(ring: TestRing):
     print(f"No attack (baseline)")
 
-def attack_sybil(ring: TestRing, num_sybil: int):
-    ring.add_sybil_nodes(num_sybil)
+def attack_sybil(ring: TestRing, num_sybil: int, sybil_flags: list[str] = None):
+      ring.add_sybil_nodes(num_sybil, sybil_flags=sybil_flags)
 
-def attack_eclipse(ring: TestRing, num_sybil: int):
-    ring.add_sybil_nodes(num_sybil)
+def attack_eclipse(ring: TestRing, num_sybil: int, sybil_flags: list[str] = None):
+      ring.add_sybil_nodes(num_sybil, sybil_flags=sybil_flags)
 
 def attack_dos(ring: TestRing):
-    import socket
+    import threading
     target_port = ring.base_port
+    stop_event = threading.Event()
 
-    print(f"Flooding port {target_port} with requests...")
-    flood_count = 0
-
-    start_time = time.time()
-    while time.time() - start_time < ATTACK_DURATION:
-        try:
+    def flood():
+        while not stop_event.is_set():
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(0.5)
-            sock.connect(("127.0.0.1", target_port))
-            packet = bytes([0x01, 0x00, 0x00, 0x42])
-            sock.sendall(packet)
-            sock.close()
-            flood_count += 1
-        except Exception:
-            pass
+            try:
+                sock.bind(("127.0.0.254", 0))
+                sock.connect(("127.0.0.1", target_port))
+                sock.sendall(bytes([0x01, 0x00, 0x00, 0x00, 0x42, 0x00]))
+            except Exception:
+                pass
+            finally:
+                sock.close()
+            time.sleep(0.01)
 
-    print(f"Sent {flood_count} requests in {ATTACK_DURATION}s")
+    threads = []
+    for _ in range(10):
+        t = threading.Thread(target=flood, daemon=True)
+        t.start()
+        threads.append(t)
+
+    print(f"Flooding port {target_port} with 10 concurrent threads...")
+    ring._flood_stop = stop_event
+    ring._flood_threads = threads
+
+
 
 ATTACK_FUNCTIONS = {
-    "none": lambda ring, scenario: attack_none(ring),
-    "sybil": lambda ring, scenario: attack_sybil(ring, scenario.num_sybil),
-    "eclipse": lambda ring, scenario: attack_eclipse(ring, scenario.num_sybil),
-    "dos": lambda ring, scenario: attack_dos(ring),
-}
+      "none":    lambda ring, scenario: attack_none(ring),
+      "sybil":   lambda ring, scenario: attack_sybil(ring, scenario.num_sybil,
+                                                      scenario.sybil_flags or None),
+      "eclipse": lambda ring, scenario: attack_eclipse(ring, scenario.num_sybil,
+                                                       scenario.sybil_flags or None),
+      "dos":     lambda ring, scenario: attack_dos(ring),
+  }
+
 
 def run_scenario(binary: str, scenario: Scenario,
                  port_offset: int = 0) -> ScenarioResult:
@@ -527,11 +526,15 @@ def run_scenario(binary: str, scenario: Scenario,
             print(f"[FAIL] Could not create ring")
             return result
 
+        attack_fn = ATTACK_FUNCTIONS.get(scenario.attack_type)
+
+        if scenario.pre_store_attack and attack_fn:
+            attack_fn(ring, scenario)
+
         test_data = ring.store_test_data(NUM_TEST_KEYS)
         result.keys_stored = len(test_data)
 
-        attack_fn = ATTACK_FUNCTIONS.get(scenario.attack_type)
-        if attack_fn:
+        if not scenario.pre_store_attack and attack_fn:
             attack_fn(ring, scenario)
 
         time.sleep(METRICS_DELAY)
@@ -550,6 +553,75 @@ def run_scenario(binary: str, scenario: Scenario,
     print(f"Completed in {result.duration_seconds:.1f}s")
     return result
 
+import statistics as _stats
+
+def _avg_module_metrics(all_runs_metrics: list[list[dict]]) -> list[dict]:
+    """Average module counter/gauge values across runs, per node."""
+    if not all_runs_metrics or not all_runs_metrics[0]:
+        return []
+    averaged = []
+    for node_idx in range(len(all_runs_metrics[0])):
+        node_runs = [rm[node_idx] for rm in all_runs_metrics
+                     if node_idx < len(rm)]
+        if not node_runs:
+            continue
+        base = node_runs[0]
+        avg_modules = []
+        for mod_idx in range(len(base["metrics"].get("modules", []))):
+            mod_runs = [nr["metrics"]["modules"][mod_idx]
+                        for nr in node_runs
+                        if mod_idx < len(nr["metrics"].get("modules", []))]
+            if not mod_runs:
+                continue
+            avg_counters = {
+                k: round(_stats.mean(mr["counters"].get(k, 0)
+                                     for mr in mod_runs), 1)
+                for k in mod_runs[0]["counters"]
+            }
+            avg_gauges = {
+                k: round(_stats.mean(mr["gauges"].get(k, 0)
+                                     for mr in mod_runs), 1)
+                for k in mod_runs[0]["gauges"]
+            }
+            avg_modules.append({
+                "name": mod_runs[0]["name"],
+                "counters": avg_counters,
+                "gauges": avg_gauges,
+            })
+        averaged.append({
+            "node_index": base["node_index"],
+            "port": base["port"],
+            "metrics": {"modules": avg_modules},
+        })
+    return averaged
+
+
+def average_results(run_list: list[ScenarioResult]) -> ScenarioResult:
+    rates = [r.lookup_success_rate for r in run_list]
+    result = ScenarioResult(
+        scenario_name=run_list[0].scenario_name,
+        security_flags=run_list[0].security_flags,
+        attack_type=run_list[0].attack_type,
+        keys_stored=round(_stats.mean(r.keys_stored for r in run_list)),
+        keys_retrieved=round(_stats.mean(r.keys_retrieved for r in run_list)),
+        keys_correct=round(_stats.mean(r.keys_correct for r in run_list)),
+        lookup_success_rate=_stats.mean(rates),
+        lookup_success_rate_std=_stats.stdev(rates) if len(rates) > 1 else 0.0,
+        duration_seconds=_stats.mean(r.duration_seconds for r in run_list),
+        module_metrics=_avg_module_metrics([r.module_metrics for r in run_list]),
+        runs=[
+            {
+                "run": i + 1,
+                "keys_retrieved": r.keys_retrieved,
+                "keys_correct": r.keys_correct,
+                "lookup_success_rate": r.lookup_success_rate,
+                "duration_seconds": r.duration_seconds,
+            }
+            for i, r in enumerate(run_list)
+        ],
+    )
+    return result
+
 def save_results_json(results: list[ScenarioResult], output_dir: str = "results"):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -563,8 +635,10 @@ def save_results_json(results: list[ScenarioResult], output_dir: str = "results"
             "keys_retrieved": r.keys_retrieved,
             "keys_correct": r.keys_correct,
             "lookup_success_rate": r.lookup_success_rate,
+            "lookup_success_rate_std": r.lookup_success_rate_std,
             "duration_seconds": r.duration_seconds,
             "module_metrics": r.module_metrics,
+            "runs": r.runs,
         })
 
     path = f"{output_dir}/result-{time.time_ns()}.json"
@@ -630,10 +704,22 @@ def main():
     print(f"Output {args.output}/")
 
     results = []
-    for i, scenario in enumerate(selected):
-        port_offset = i * 100
-        result = run_scenario(args.binary, scenario, port_offset)
-        results.append(result)
+    # for i, scenario in enumerate(selected):
+    #     port_offset = i * 100
+    #     result = run_scenario(args.binary, scenario, port_offset)
+    #     results.append(result)
+
+    for scenario in selected:
+        run_list = []
+        for run_num in range(1, NUM_RUNS + 1):
+            print(f"\n[Run {run_num}/{NUM_RUNS}] {scenario.name}")
+            result = run_scenario(args.binary, scenario, port_offset=0)
+            run_list.append(result)
+            print(f"  -> {result.lookup_success_rate*100:.1f}%")
+        averaged = average_results(run_list)
+        print(f"  AVERAGE: {averaged.lookup_success_rate*100:.1f}% "
+              f"(±{averaged.lookup_success_rate_std*100:.1f}%)")
+        results.append(averaged)
 
     print(f"\n{'=' * 60}")
     print("GENERATING RESULTS")

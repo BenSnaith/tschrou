@@ -22,7 +22,8 @@ public:
 
   static std::optional<NodeInfo> FindSuccessor(
     const NodeAddress& target,
-    NodeID id
+    NodeID id,
+    std::optional<NodeInfo> sender = std::nullopt
   );
 
   static std::optional<NodeInfo> GetPredecessor(const NodeAddress& target);

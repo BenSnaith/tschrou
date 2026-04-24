@@ -1,0 +1,108 @@
+[
+  {
+    "scenario": "sybil_subnet_diversity",
+    "attack_type": "sybil",
+    "security_flags": [
+      "--subnet-diversity",
+      "--subnet-max",
+      "2"
+    ],
+    "keys_stored": 500,
+    "keys_retrieved": 210,
+    "keys_correct": 210,
+    "lookup_success_rate": 0.42,
+    "duration_seconds": 82.20191240310669,
+    "module_metrics": [
+      {
+        "node_index": 0,
+        "port": 11000,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 100
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 1,
+        "port": 11001,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 92
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 2,
+        "port": 11002,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 48
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 3,
+        "port": 11003,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 1
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "node_index": 4,
+        "port": 11004,
+        "metrics": {
+          "modules": [
+            {
+              "name": "SubnetDiversity",
+              "counters": {
+                "accepted": 4,
+                "rejected": 6
+              },
+              "gauges": {
+                "unique_subnets": 2
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

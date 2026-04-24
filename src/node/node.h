@@ -49,6 +49,7 @@ class Node {
 
     // used for the python test
     bool is_malicious{false};
+    bool spoof_id{false};
   };
 
   explicit Node(const Config& config);

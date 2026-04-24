@@ -103,13 +103,25 @@ std::vector<std::byte> FindSuccessorRequest::Serialise() const {
   std::vector<std::byte> buffer;
   buffer.push_back(static_cast<std::byte>(type_));
   WriteU32(buffer, id_);
+  if (sender_) {
+    buffer.push_back(std::byte{1});
+    WriteNodeInfo(buffer, *sender_);
+  } else {
+    buffer.push_back(std::byte{0});
+  }
   return buffer;
 }
 
 FindSuccessorRequest FindSuccessorRequest::Deserialise(
     std::span<std::byte> data) {
   FindSuccessorRequest request;
-  request.id_ = ReadU32(reinterpret_cast<const u8*>(data.data() + 1));
+  std::byte* ptr = data.data() + 1;
+  request.id_ = ReadU32(ptr);
+  ptr += 4;
+  bool has_sender = (*ptr++ != std::byte{0});
+  if (has_sender) {
+    request.sender_ = ReadNodeInfo(ptr);
+  }
   return request;
 }
 

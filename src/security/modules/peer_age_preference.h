@@ -9,28 +9,30 @@ public:
   explicit PeerAgePreference(double min_age_seconds = 30.0)
     : min_age_seconds_(min_age_seconds) {}
 
-  bool AllowNode(const NodeInfo& node) override {
+  bool PreferOver(const NodeInfo& incumbent,
+                  const NodeInfo& candidate) override {
     std::lock_guard lock(mutex_);
     auto now = std::chrono::steady_clock::now();
-    auto it = first_seen_.find(node.id_);
 
-    if (it == first_seen_.end()) {
-      // first time seeing node
-      first_seen_[node.id_] = now;
-      ++new_nodes_seen_;
+    bool incumbent_mature = IsMatureUnlocked(incumbent.id_, now);
+    bool candidate_mature = IsMatureUnlocked(candidate.id_, now);
 
-      // allow it the first time
+    // Record first-seen timestamps for both so age accumulates.
+    RecordIfNew(incumbent.id_, now);
+    RecordIfNew(candidate.id_, now);
+
+    // Only prefer the incumbent when it is mature and the candidate is not.
+    // In all other cases yield to Chord's own position logic.
+    if (incumbent_mature && !candidate_mature) {
+      ++young_rejections_;
       return true;
     }
 
-    auto age = std::chrono::duration<double>(now - it->second);
-    if (age.count() < min_age_seconds_) {
-      ++young_rejections_;
-      return false;
+    if (candidate_mature) {
+      ++mature_accepts_;
     }
 
-    ++mature_accepts_;
-    return true;
+    return false;
   }
 
   bool IsMature(NodeID id) const {
@@ -41,7 +43,7 @@ public:
     auto age = std::chrono::duration<double>(
       std::chrono::steady_clock::now() - it->second
     );
-    return age.count() < min_age_seconds_;
+    return age.count() >= min_age_seconds_;
   }
 
   double GetAge(NodeID id) const {
@@ -72,15 +74,15 @@ public:
   SecurityMetrics Metrics() const override {
     std::lock_guard lock(mutex_);
     return {
-    .module_name = Name(),
-    .counters = {
-      {"new_nodes_seen", new_nodes_seen_.load()},
-      {"young_rejections", young_rejections_.load()},
-      {"mature_accepts", mature_accepts_.load()},
-    },
-    .gauges = {
-      {"tracked_nodes", static_cast<double>(first_seen_.size())},
-    }
+      .module_name = Name(),
+      .counters = {
+        {"new_nodes_seen",  new_nodes_seen_.load()},
+        {"young_rejections", young_rejections_.load()},
+        {"mature_accepts",  mature_accepts_.load()},
+      },
+      .gauges = {
+        {"tracked_nodes", static_cast<double>(first_seen_.size())},
+      }
     };
   }
 
@@ -101,6 +103,21 @@ private:
   std::atomic<u64> new_nodes_seen_{0};
   std::atomic<u64> young_rejections_{0};
   std::atomic<u64> mature_accepts_{0};
+
+  bool IsMatureUnlocked(NodeID id,
+                         std::chrono::steady_clock::time_point now) const {
+    auto it = first_seen_.find(id);
+    if (it == first_seen_.end()) return false;
+    auto age = std::chrono::duration<double>(now - it->second);
+    return age.count() >= min_age_seconds_;
+  }
+
+  void RecordIfNew(const NodeID id, std::chrono::steady_clock::time_point now) {
+    if (!first_seen_.contains(id)) {
+      first_seen_[id] = now;
+      ++new_nodes_seen_;
+    }
+  }
 };
 } // namespace tsc::sec::mod
 

@@ -102,8 +102,8 @@ std::optional<std::vector<std::byte>> TcpClient::SendRequest(
 }
 
 std::optional<NodeInfo> TcpClient::FindSuccessor(const NodeAddress& target,
-                                                 NodeID id) {
-  FindSuccessorRequest request{id};
+                                                 NodeID id, std::optional<NodeInfo> sender) {
+  FindSuccessorRequest request{id, std::move(sender)};
   auto response = SendRequest(target, request.Serialise());
 
   if(!response) {
