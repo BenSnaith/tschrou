@@ -1,5 +1,4 @@
-# tschrou
-Revisiting DHTs
+# CS3IP Revisiting Distributed Hash Tables
 
 ```bash
 cd build
